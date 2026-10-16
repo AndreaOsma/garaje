@@ -1,0 +1,26 @@
+services:
+  garaje:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    # Solo en este equipo por defecto: la app no tiene login. Para servirla a la red, pon
+    # GARAJE_BIND=0.0.0.0 únicamente si delante hay un proxy con autenticación o una VPN.
+    ports:
+      - "${GARAJE_BIND:-127.0.0.1}:${GARAJE_HTTP_PORT:-8080}:8080"
+    volumes:
+      - garaje_data:/data
+    environment:
+      DATABASE_URL: sqlite:////data/garaje.db
+      GARAJE_TZ: ${GARAJE_TZ:-Europe/Madrid}
+      # IA del servidor para investigar códigos de avería (opcional; también se elige en Ajustes).
+      GARAJE_ANTHROPIC_API_KEY: ${GARAJE_ANTHROPIC_API_KEY:-}
+      GARAJE_OLLAMA_URL: ${GARAJE_OLLAMA_URL:-}
+      GARAJE_OLLAMA_MODEL: ${GARAJE_OLLAMA_MODEL:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+
+volumes:
+  garaje_data:

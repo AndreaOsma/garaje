@@ -1,0 +1,50 @@
+/* GENERADO desde dev/lib/ai-providers (Homelab): no lo edites aquí, edita la librería y ejecuta su sync.mjs */
+/* Tarjeta de ajustes de IA. Usa los tokens de cada app (--glass-strong, --text-muted…) con valores por defecto. */
+.ai-card {
+  padding: 16px;
+  border-radius: var(--radius, 14px);
+  background: var(--glass-strong, var(--surface, #fff));
+  border: 1px solid var(--glass-border, var(--border-soft, rgba(0, 0, 0, 0.12)));
+  color: var(--text-main, inherit);
+}
+.ai-card__title { margin: 0 0 6px; font-size: 1.05rem; }
+.ai-card__muted { margin: 0; color: var(--text-muted, #667); font-size: 0.82rem; }
+.ai-card__status { margin: 10px 0 14px; padding: 8px 10px; border-radius: 8px; font-size: 0.88rem; }
+.ai-card__status.is-on { background: color-mix(in srgb, var(--ok, #0b7a4b) 12%, transparent); }
+.ai-card__status.is-off { background: var(--surface-soft, rgba(0, 0, 0, 0.04)); color: var(--text-muted, #667); }
+.ai-card__form { display: grid; gap: 12px; }
+.ai-card__field { display: grid; gap: 4px; }
+.ai-card__field label { font-weight: 600; font-size: 0.88rem; }
+.ai-card__field input,
+.ai-card__field select {
+  font: inherit;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft, rgba(0, 0, 0, 0.18));
+  background: var(--bg, #fff);
+  color: inherit;
+  width: 100%;
+}
+.ai-card__field input:focus-visible,
+.ai-card__field select:focus-visible,
+.ai-card__btn:focus-visible { outline: 2px solid var(--primary, #1f6fd1); outline-offset: 2px; }
+.ai-card__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ai-card__btn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft, rgba(0, 0, 0, 0.18));
+  background: var(--surface-soft, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+.ai-card__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ai-card__btn--primary { background: var(--primary, #1f6fd1); border-color: transparent; color: var(--primary-ink, #fff); }
+.ai-card__btn--danger { color: var(--crit, #c22b2b); }
+.ai-card__msg { margin: 0; font-size: 0.88rem; }
+.ai-card__msg.is-ok { color: var(--ok, #0b7a4b); }
+.ai-card__msg.is-error { color: var(--crit, #c22b2b); }

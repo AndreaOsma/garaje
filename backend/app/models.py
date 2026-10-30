@@ -20,6 +20,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import false
 
 from .database import Base
 
@@ -31,6 +32,8 @@ class Vehicle(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
+    # car | motorcycle: cambia el plan por defecto, las revisiones, las piezas y el modelo 3D.
+    kind = Column(String(12), nullable=False, default="car", server_default="car")
     make = Column(String(60), default="")
     model = Column(String(60), default="")
     year = Column(Integer, nullable=True)
@@ -46,6 +49,13 @@ class Vehicle(Base):
     purchase_date = Column(Date, nullable=True)
     odometer_km = Column(Integer, nullable=False, default=0)
     odometer_updated_at = Column(DateTime(timezone=True), nullable=True)
+    # Lo que queda en el depósito (o la batería), en %: lo dice Andrea (app o ágora); repostar lleno = 100.
+    fuel_level_pct = Column(Integer, nullable=True)
+    fuel_level_at = Column(DateTime(timezone=True), nullable=True)
+    # Capacidad del depósito en litros (kWh útiles si es eléctrico). manual | web | ia (specs_research).
+    tank_capacity = Column(Float, nullable=True)
+    tank_capacity_source = Column(String(8), nullable=True)
+    tank_capacity_note = Column(String(300), nullable=True)
     notes = Column(Text, default="")
     archived = Column(Boolean, nullable=False, default=False)
     # sha256 del token de ingesta OBD; el token en claro solo se muestra al generarlo.
@@ -316,6 +326,8 @@ class Checklist(Base):
     id = Column(Integer, primary_key=True)
     vehicle_id = Column(Integer, ForeignKey("vehicles.id", ondelete="CASCADE"), nullable=True, index=True)
     name = Column(String(120), nullable=False)
+    # Plantillas: solo para coches o motos (nulo = para cualquiera).
+    vehicle_kind = Column(String(12), nullable=True)
     # Cada cuánto conviene hacerla (para avisar); nulo = cuando toque (p.ej. antes de un viaje).
     interval_days = Column(Integer, nullable=True)
     # [{"title": "Niveles", "items": [{"label": "Aceite", "check": "Entre MIN y MAX"}]}]
@@ -359,3 +371,124 @@ class DtcDefinition(Base):
     # Búsqueda automática: sistema, causas, consejo, fuentes, confianza, proveedor.
     details = Column(JSON, nullable=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+# ---------------------------------------------------------------------------
+# Carnés: tu progreso hacia cada permiso y su teórico como curso de lecciones
+# (formato campus-pilot-course y juego de dev/lib/learn-game, como Insignia y Bitácora).
+# ---------------------------------------------------------------------------
+
+class LicenseProgress(Base):
+    """Tu situación con un permiso del catálogo (licenses.CATALOG): qué pasos llevas y cuándo."""
+
+    __tablename__ = "licenses"
+
+    code = Column(String(8), primary_key=True)
+    # none | planning | studying | obtained
+    status = Column(String(12), nullable=False, default="none")
+    # {"medico": "2026-10-20", "teorico": null, …}: fecha en que se completó cada paso.
+    steps = Column(JSON, nullable=False, default=dict)
+    next_exam_on = Column(Date, nullable=True)
+    obtained_on = Column(Date, nullable=True)
+    notes = Column(Text, nullable=False, default="")
+
+
+class Course(Base):
+    """Teórico de un permiso como camino de lecciones. Uno por permiso (license_code)."""
+
+    __tablename__ = "learn_courses"
+
+    id = Column(Integer, primary_key=True)
+    slug = Column(String(64), nullable=False, unique=True)
+    license_code = Column(String(8), nullable=False, unique=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False, default="")
+    source_note = Column(Text, nullable=False, default="")
+
+    units = relationship("CourseUnit", back_populates="course", cascade="all, delete-orphan", order_by="CourseUnit.position")
+
+
+class CourseUnit(Base):
+    __tablename__ = "learn_units"
+
+    id = Column(Integer, primary_key=True)
+    course_id = Column(Integer, ForeignKey("learn_courses.id", ondelete="CASCADE"), nullable=False, index=True)
+    ref = Column(String(64), nullable=False)
+    # Slug del JSON del que vino: reimportar esa fuente solo reemplaza sus unidades.
+    source = Column(String(64), nullable=False, default="")
+    title = Column(String(200), nullable=False)
+    position = Column(Integer, nullable=False, default=0)
+    chest_claimed = Column(Boolean, nullable=False, default=False)
+    # Fuera del progreso, del orden del camino y de los simulacros (p. ej. cómo son las pruebas).
+    extra = Column(Boolean, nullable=False, default=False, server_default=false())
+
+    course = relationship("Course", back_populates="units")
+    lessons = relationship("Lesson", back_populates="unit", cascade="all, delete-orphan", order_by="Lesson.position")
+
+
+class Lesson(Base):
+    __tablename__ = "learn_lessons"
+
+    id = Column(Integer, primary_key=True)
+    unit_id = Column(Integer, ForeignKey("learn_units.id", ondelete="CASCADE"), nullable=False, index=True)
+    ref = Column(String(64), nullable=False)
+    title = Column(String(200), nullable=False)
+    position = Column(Integer, nullable=False, default=0)
+    completed_at = Column(DateTime, nullable=True)
+    best_ratio = Column(Float, nullable=True)
+    runs = Column(Integer, nullable=False, default=0)
+
+    unit = relationship("CourseUnit", back_populates="lessons")
+    steps = relationship("LessonStep", back_populates="lesson", cascade="all, delete-orphan", order_by="LessonStep.position")
+
+
+class LessonStep(Base):
+    __tablename__ = "learn_steps"
+
+    id = Column(Integer, primary_key=True)
+    lesson_id = Column(Integer, ForeignKey("learn_lessons.id", ondelete="CASCADE"), nullable=False, index=True)
+    ref = Column(String(64), nullable=False)
+    position = Column(Integer, nullable=False, default=0)
+    # info | choice | truefalse | order | match (ver learn.py)
+    kind = Column(String(12), nullable=False)
+    prompt = Column(Text, nullable=False)
+    # Opciones y solución. Nunca se envía antes de responder.
+    data = Column(JSON, nullable=False, default=dict)
+    explanation = Column(Text, nullable=False, default="")
+    # De dónde sale (norma o tema). Obligatorio salvo en tarjetas informativas.
+    source = Column(String(300), nullable=False, default="")
+    hints = Column(JSON, nullable=False, default=list)
+    concepts = Column(JSON, nullable=False, default=list)
+    # Repaso espaciado de lo fallado (Leitner).
+    box = Column(Integer, nullable=False, default=0)
+    due_on = Column(Date, nullable=True)
+    correct = Column(Integer, nullable=False, default=0)
+    wrong = Column(Integer, nullable=False, default=0)
+    confident_wrong = Column(Integer, nullable=False, default=0)
+
+    lesson = relationship("Lesson", back_populates="steps")
+
+
+class LearnDay(Base):
+    """Actividad de un día: la racha cuenta los días con XP o cubiertos con un día libre."""
+
+    __tablename__ = "learn_days"
+
+    date = Column(Date, primary_key=True)
+    xp = Column(Integer, nullable=False, default=0)
+    correct = Column(Integer, nullable=False, default=0)
+    best_combo = Column(Integer, nullable=False, default=0)
+    lessons = Column(Integer, nullable=False, default=0)
+    perfect_lessons = Column(Integer, nullable=False, default=0)
+    exams = Column(Integer, nullable=False, default=0)
+    claimed = Column(JSON, nullable=False, default=list)
+    frozen = Column(Boolean, nullable=False, default=False)
+
+
+class LearnProfile(Base):
+    __tablename__ = "learn_profile"
+
+    id = Column(Integer, primary_key=True)
+    gems = Column(Integer, nullable=False, default=0)
+    streak_freezes = Column(Integer, nullable=False, default=0)
+    last_settled = Column(Date, nullable=True)

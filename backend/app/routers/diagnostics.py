@@ -231,13 +231,21 @@ async def import_file(
     """CSV de lecturas (Car Scanner y similares) o TXT del OBD (informe de diagnóstico o
     log del ELM327). Se detecta por el contenido, no por la extensión."""
     content = await file.read(config.MAX_CSV_UPLOAD_BYTES + 1)
+    return import_content(db, vehicle, content, file.filename or "OBD", day, tz_name, label, background)
+
+
+def import_content(
+    db: Session, vehicle: Vehicle, content: bytes, filename: str, day: date | None, tz_name: str | None, label: str,
+    background: BackgroundTasks | None = None,
+) -> schemas.IngestResult:
+    """Lo mismo que import_file con los bytes ya leídos (también lo usa ágora: agent_tools.importar_obd)."""
     if len(content) > config.MAX_CSV_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="El fichero supera el tamaño máximo (20 MB)")
     if not content.strip():
         raise HTTPException(status_code=422, detail="El fichero está vacío")
     external_id = hashlib.sha256(content).hexdigest()[:32]
     previous = db.query(ObdSession).filter_by(vehicle_id=vehicle.id, external_id=external_id).first()
-    name = (file.filename or "OBD")[:160]
+    name = (filename or "OBD")[:160]
 
     try:
         parsed = parse_csv(content, day or date.today(), resolve_tz(tz_name))

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api, type Checklist, type IssueSeverity, type RunResult, type Vehicle } from "../api";
 import { today } from "../format";
+import { Check, Icon, TriangleAlert, X } from "../vendor/icons";
 
 export const SEVERITY_LABEL: Record<IssueSeverity, string> = {
   info: "Aviso",
@@ -39,7 +40,7 @@ export function ChecklistRunner({ vehicle, checklist, onDone, onCancel }: Props)
       });
       onDone(
         run.failed === 0
-          ? `✓ «${checklist.name}» sin fallos`
+          ? `«${checklist.name}» sin fallos`
           : `«${checklist.name}»: ${run.failed} fallo${run.failed === 1 ? "" : "s"}${run.issues_created ? `, ${run.issues_created} incidencia${run.issues_created === 1 ? "" : "s"} abierta${run.issues_created === 1 ? "" : "s"}` : ""}`
       );
     } catch (err) {
@@ -78,10 +79,10 @@ export function ChecklistRunner({ vehicle, checklist, onDone, onCancel }: Props)
                 </div>
                 <div className="runner__buttons" role="group" aria-label={it.label}>
                   <button type="button" className={`btn btn--sm ${st.ok === true ? "btn--ok" : "btn--ghost"}`} aria-pressed={st.ok === true} onClick={() => set(it.key, { ok: st.ok === true ? null : true })}>
-                    ✓ OK
+                    <Icon svg={Check} /> OK
                   </button>
                   <button type="button" className={`btn btn--sm ${st.ok === false ? "btn--danger" : "btn--ghost"}`} aria-pressed={st.ok === false} onClick={() => set(it.key, { ok: st.ok === false ? null : false })}>
-                    ✗ Falla
+                    <Icon svg={X} /> Falla
                   </button>
                 </div>
                 {st.ok === false && (
@@ -117,7 +118,7 @@ export function ChecklistRunner({ vehicle, checklist, onDone, onCancel }: Props)
           <input id="runner-km" type="number" inputMode="numeric" min={0} value={odometer} onChange={(e) => setOdometer(e.target.value)} />
         </div>
         <div className="form-status" role="status" aria-live="polite">
-          {saving === "error" && <p className="form-error">⚠️ {error}</p>}
+          {saving === "error" && <p className="form-error"><Icon svg={TriangleAlert} /> {error}</p>}
         </div>
         <div className="form-actions">
           <button type="button" className="btn btn--ghost" onClick={onCancel} disabled={saving === "loading"}>

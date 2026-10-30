@@ -1,10 +1,10 @@
 from datetime import date, timedelta
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from .. import config, dtc_dictionary, mechanics, schemas, services
-from ..database import get_db
+from .. import config, dtc_dictionary, mechanics, schemas, services, specs_research
+from ..database import SessionLocal, get_db
 from ..models import Dtc, Expense, FuelEntry, InboxItem, Issue, MaintenanceTask, ObdLatestValue, ServiceRecord, Vehicle
 from .deps import get_vehicle
 from .diagnostics import live_values
@@ -17,19 +17,46 @@ def list_vehicles(db: Session = Depends(get_db)):
     return db.query(Vehicle).order_by(Vehicle.archived, Vehicle.name).all()
 
 
+def _apply_tank(vehicle: Vehicle, research) -> bool:
+    """Guarda lo encontrado salvo que la capacidad la hayas escrito tú."""
+    if research is None or vehicle.tank_capacity_source == "manual":
+        return False
+    vehicle.tank_capacity = research.capacity
+    vehicle.tank_capacity_source = "web" if research.provider == "claude" and research.sources else "ia"
+    vehicle.tank_capacity_note = research.note or None
+    return True
+
+
+def research_tank_background(vehicle_id: int) -> None:
+    """Al dar de alta el vehículo (o cambiar marca/modelo/motor) sin capacidad: se busca sola."""
+    db = SessionLocal()
+    try:
+        v = db.get(Vehicle, vehicle_id)
+        if v is None or v.tank_capacity_source == "manual" or not v.make:
+            return
+        if _apply_tank(v, specs_research.research_tank(v.make, v.model, v.year, v.engine, v.fuel_type, v.vin, v.kind)):
+            db.commit()
+    finally:
+        db.close()
+
+
 @router.post("", response_model=schemas.VehicleOut, status_code=201)
-def create_vehicle(payload: schemas.VehicleCreate, db: Session = Depends(get_db)):
+def create_vehicle(payload: schemas.VehicleCreate, background: BackgroundTasks, db: Session = Depends(get_db)):
     data = payload.model_dump(exclude={"with_default_plan"})
     vehicle = Vehicle(**data)
+    if payload.tank_capacity:
+        vehicle.tank_capacity_source = "manual"
     if payload.odometer_km:
         vehicle.odometer_updated_at = services.utcnow()
     db.add(vehicle)
     db.flush()
     if payload.with_default_plan:
-        for task in services.default_plan(payload.fuel_type):
+        for task in services.default_plan(payload.fuel_type, payload.kind):
             db.add(MaintenanceTask(vehicle_id=vehicle.id, **task))
     db.commit()
     db.refresh(vehicle)
+    if not vehicle.tank_capacity:
+        background.add_task(research_tank_background, vehicle.id)
     return vehicle
 
 
@@ -39,14 +66,25 @@ def get_one(vehicle: Vehicle = Depends(get_vehicle)):
 
 
 @router.put("/{vehicle_id}", response_model=schemas.VehicleOut)
-def update_vehicle(payload: schemas.VehicleIn, vehicle: Vehicle = Depends(get_vehicle), db: Session = Depends(get_db)):
+def update_vehicle(payload: schemas.VehicleIn, background: BackgroundTasks, vehicle: Vehicle = Depends(get_vehicle),
+                   db: Session = Depends(get_db)):
     previous_km = vehicle.odometer_km
+    identity = (vehicle.make, vehicle.model, vehicle.year, vehicle.engine, vehicle.fuel_type)
+    previous_tank = vehicle.tank_capacity
     for key, value in payload.model_dump().items():
         setattr(vehicle, key, value)
     if payload.odometer_km != previous_km:
         vehicle.odometer_updated_at = services.utcnow()
+    if payload.tank_capacity != previous_tank:
+        # Escrita (o borrada) a mano: manda la tuya; borrada, se vuelve a buscar.
+        vehicle.tank_capacity_source = "manual" if payload.tank_capacity else None
+        vehicle.tank_capacity_note = None
+    elif vehicle.tank_capacity_source != "manual" and identity != (vehicle.make, vehicle.model, vehicle.year, vehicle.engine, vehicle.fuel_type):
+        vehicle.tank_capacity = vehicle.tank_capacity_source = vehicle.tank_capacity_note = None  # otro coche: otra ficha
     db.commit()
     db.refresh(vehicle)
+    if not vehicle.tank_capacity:
+        background.add_task(research_tank_background, vehicle.id)
     return vehicle
 
 
@@ -62,6 +100,42 @@ def set_odometer(payload: schemas.OdometerIn, vehicle: Vehicle = Depends(get_veh
     """Lectura manual del cuentakilómetros. Permite bajarlo (corrección de un error de tecleo)."""
     vehicle.odometer_km = payload.odometer_km
     vehicle.odometer_updated_at = services.utcnow()
+    db.commit()
+    db.refresh(vehicle)
+    return vehicle
+
+
+@router.post("/{vehicle_id}/tank/confirm", response_model=schemas.VehicleOut)
+def confirm_tank(vehicle: Vehicle = Depends(get_vehicle), db: Session = Depends(get_db)):
+    """La capacidad que propuso la IA (o la búsqueda) es correcta: pasa a ser tuya y ya no se toca."""
+    if not vehicle.tank_capacity:
+        raise HTTPException(422, "No hay capacidad que confirmar")
+    vehicle.tank_capacity_source = "manual"
+    db.commit()
+    db.refresh(vehicle)
+    return vehicle
+
+
+@router.post("/{vehicle_id}/tank/research", response_model=schemas.VehicleOut)
+def research_tank(vehicle: Vehicle = Depends(get_vehicle), db: Session = Depends(get_db)):
+    """Busca ya la capacidad del depósito (botón de Ajustes). No pisa la que escribiste tú."""
+    if not vehicle.make:
+        raise HTTPException(422, "Pon antes la marca y el modelo del vehículo")
+    if vehicle.tank_capacity_source == "manual":
+        raise HTTPException(409, "La capacidad la escribiste tú: bórrala si quieres que la busque Garaje")
+    found = specs_research.research_tank(vehicle.make, vehicle.model, vehicle.year, vehicle.engine, vehicle.fuel_type, vehicle.vin, vehicle.kind)
+    if found is None:
+        raise HTTPException(404, "No he encontrado un dato fiable. Escríbela tú (viene en el manual o la ficha técnica)")
+    _apply_tank(vehicle, found)
+    db.commit()
+    db.refresh(vehicle)
+    return vehicle
+
+
+@router.post("/{vehicle_id}/fuel-level", response_model=schemas.VehicleOut)
+def set_fuel_level(payload: schemas.FuelLevelIn, vehicle: Vehicle = Depends(get_vehicle), db: Session = Depends(get_db)):
+    """Lo que queda en el depósito (o la batería), en %."""
+    services.set_fuel_level(vehicle, payload.pct)
     db.commit()
     db.refresh(vehicle)
     return vehicle
@@ -215,6 +289,7 @@ def dashboard(vehicle: Vehicle = Depends(get_vehicle), db: Session = Depends(get
 
     return schemas.DashboardOut(
         vehicle=schemas.VehicleOut.model_validate(vehicle),
+        fuel=schemas.FuelGauge(**services.fuel_gauge(vehicle, avg)),
         alerts=alerts,
         costs=_cost_summary(db, vehicle),
         avg_consumption=avg,

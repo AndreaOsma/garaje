@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { Status } from "../api";
+import { Check, CircleAlert, CircleHelp, CircleMinus, ClockAlert, Icon, TriangleAlert } from "../vendor/icons";
 
 const STATUS: Record<string, { icon: string; label: string }> = {
-  ok: { icon: "✓", label: "Al día" },
-  soon: { icon: "◔", label: "Pronto" },
-  overdue: { icon: "!", label: "Vencido" },
-  unknown: { icon: "?", label: "Sin registro" },
-  inactive: { icon: "–", label: "Desactivada" },
-  done: { icon: "✓", label: "Hecho" },
+  ok: { icon: Check, label: "Al día" },
+  soon: { icon: ClockAlert, label: "Pronto" },
+  overdue: { icon: CircleAlert, label: "Vencido" },
+  unknown: { icon: CircleHelp, label: "Sin registro" },
+  inactive: { icon: CircleMinus, label: "Desactivada" },
+  done: { icon: Check, label: "Hecho" },
 };
 
 /** Estado con icono + texto (nunca solo color). */
@@ -15,14 +16,14 @@ export function StatusBadge({ status, label }: { status: Status; label?: string 
   const s = STATUS[status] ?? STATUS.unknown;
   return (
     <span className={`badge badge--${status}`}>
-      <span aria-hidden>{s.icon}</span> {label ?? s.label}
+      <Icon svg={s.icon} /> {label ?? s.label}
     </span>
   );
 }
 
 export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <div className="empty-state">
+    <div className="empty-state ds-empty">
       <p className="empty-state__title">{title}</p>
       {children && <div className="muted">{children}</div>}
     </div>
@@ -32,7 +33,7 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
 export function Loading({ label = "Cargando…" }: { label?: string }) {
   return (
     <div className="loading" role="status" aria-live="polite">
-      <span className="spinner" aria-hidden />
+      <span className="ds-orbit" aria-hidden="true" />
       {label}
     </div>
   );
@@ -41,7 +42,7 @@ export function Loading({ label = "Cargando…" }: { label?: string }) {
 export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div className="error-box" role="alert">
-      <span>⚠️ {message}</span>
+      <span><Icon svg={TriangleAlert} /> {message}</span>
       {onRetry && (
         <button type="button" className="btn btn--ghost btn--sm" onClick={onRetry}>
           Reintentar

@@ -5,10 +5,12 @@ import { EXPENSE_CATEGORIES, date, money } from "../format";
 import { Modal } from "./Modal";
 import { RecordForm } from "./RecordForm";
 import { confirmAndRun, useLoad } from "./ui";
+import { Euro, Fuel, Icon, Wrench, X } from "../vendor/icons";
 
 type Kind = "fuel" | "service" | "expense";
 
-const KIND_LABEL: Record<Kind, string> = { fuel: "⛽ Repostaje", service: "🔧 Taller", expense: "💶 Gasto" };
+const KIND_LABEL: Record<Kind, string> = { fuel: "Repostaje", service: "Taller", expense: "Gasto" };
+const KIND_ICON: Record<Kind, string> = { fuel: Fuel, service: Wrench, expense: Euro };
 
 type Props = { vehicle: Vehicle; detailed: boolean; onChanged: () => void };
 
@@ -101,7 +103,7 @@ export function SoberanInbox({ vehicle, detailed, onChanged }: Props) {
                   onClick={() => setOpen({ item, kind })}
                   title={item.suggested_kind === kind ? "Sugerido por el comercio" : undefined}
                 >
-                  {KIND_LABEL[kind]}
+                  <Icon svg={KIND_ICON[kind]} /> {KIND_LABEL[kind]}
                 </button>
               ))}
               <button
@@ -117,7 +119,7 @@ export function SoberanInbox({ vehicle, detailed, onChanged }: Props) {
                   )
                 }
               >
-                ✕
+                <Icon svg={X} />
               </button>
             </div>
           </li>

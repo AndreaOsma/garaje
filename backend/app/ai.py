@@ -26,6 +26,11 @@ def data_dir() -> Path:
 
 
 def _env_fallback() -> Fallback:
+    # Variables estándar, iguales en todas las apps (AI_PROVIDER, AI_MODEL, AI_BASE_URL, AI_API_KEY[_FILE]);
+    # mandan sobre las antiguas de esta app, que siguen valiendo.
+    std = Fallback.from_env()
+    if std.provider:
+        return std
     key = os.getenv("GARAJE_ANTHROPIC_API_KEY", "").strip()
     if key:
         return Fallback(provider="anthropic", key=key)

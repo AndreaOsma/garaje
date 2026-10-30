@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { Icon, X } from "../vendor/icons";
 
 type Props = {
   title: string;
@@ -34,7 +35,7 @@ export function Modal({ title, onClose, children, wide = false }: Props) {
         <header className="modal__header">
           <h2 id="modal-title">{title}</h2>
           <button type="button" className="icon-btn" onClick={onClose} aria-label="Cerrar">
-            ✕
+            <Icon svg={X} />
           </button>
         </header>
         {children}

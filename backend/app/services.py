@@ -57,8 +57,41 @@ def add_months(day: date, months: int) -> date:
 # Plan de mantenimiento por defecto
 # ---------------------------------------------------------------------------
 
-def default_plan(fuel_type: str) -> list[dict]:
-    """Intervalos orientativos y conservadores; el manual de cada coche manda (editables)."""
+VEHICLE_KINDS = ("car", "motorcycle")
+
+
+def _moto_plan(fuel_type: str) -> list[tuple]:
+    combustion = fuel_type != "electric"
+    plan = [
+        ("Engrase y tensado de cadena", "transmisión", 800, None,
+         "Cada 500–1.000 km y siempre tras lluvia o lavado. Holgura según el manual (suele ser 20–35 mm). Si tu moto es de cardán o correa, desactívala."),
+        ("Kit de arrastre (cadena, piñón y corona)", "transmisión", 25000, None, "Se cambia entero: piñón y corona se desgastan con la cadena."),
+        ("Revisión de pastillas y discos", "frenos", 6000, 12, ""),
+        ("Cambio de líquido de frenos", "frenos", None, 24, "Delantero y trasero. Es higroscópico: se cambia por tiempo, no por km."),
+        ("Revisión de neumáticos", "neumáticos", 3000, 6, "Presión cada dos semanas y en frío. Profundidad mínima legal: 1,6 mm."),
+        ("Revisión de batería 12 V", "eléctrico", None, 12, "En reposo debería marcar ≥ 12,6 V; si no la usas en invierno, mantenedor."),
+        ("Aceite de horquilla y retenes", "suspensión", 20000, 24, ""),
+        ("Engrase de cables y mandos", "otros", 6000, 12, "Embrague, gas y articulaciones de palancas y caballete."),
+    ]
+    if combustion:
+        plan += [
+            ("Aceite y filtro de aceite", "aceite", 6000, 12, "Muchas motos piden 6.000–12.000 km: ajústalo a tu manual."),
+            ("Filtro de aire", "filtros", 12000, 24, ""),
+            ("Bujías", "encendido", 12000, 24, "Las de iridio aguantan más: mira tu manual."),
+            ("Holgura de válvulas", "distribución", 24000, None, ""),
+            ("Refrigerante", "refrigeración", None, 36, "Solo si tu moto es refrigerada por líquido; si es por aire, desactívala."),
+            ("Líquido de embrague", "transmisión", None, 24, "Solo con embrague hidráulico; con cable, desactívala."),
+        ]
+    return plan
+
+
+def default_plan(fuel_type: str, kind: str = "car") -> list[dict]:
+    """Intervalos orientativos y conservadores; el manual de cada vehículo manda (editables)."""
+    if kind == "motorcycle":
+        return [
+            {"name": n, "category": c, "interval_km": km, "interval_months": m, "notes": notes}
+            for n, c, km, m, notes in _moto_plan(fuel_type)
+        ]
     combustion = fuel_type != "electric"
     spark = fuel_type in ("gasoline", "hybrid", "phev", "lpg")
     plan = [
@@ -101,14 +134,18 @@ def task_status(task: MaintenanceTask, odometer_km: int, today: Optional[date] =
     )
     remaining_km = next_km - odometer_km if next_km is not None else None
     remaining_days = (next_date - today).days if next_date else None
+    # «Pronto» proporcional en intervalos cortos (la cadena de una moto, cada 800 km, estaría
+    # siempre en «pronto» con el umbral fijo de 1.000 km). En los de coche no cambia nada.
+    soon_km = min(config.SOON_KM, max(100, (task.interval_km or 0) // 5))
+    soon_days = min(config.SOON_DAYS, max(3, (task.interval_months or 0) * 30 // 5))
     if not task.active:
         status = "inactive"
     elif remaining_km is None and remaining_days is None:
         status = "unknown"
     elif (remaining_km is not None and remaining_km < 0) or (remaining_days is not None and remaining_days < 0):
         status = "overdue"
-    elif (remaining_km is not None and remaining_km <= config.SOON_KM) or (
-        remaining_days is not None and remaining_days <= config.SOON_DAYS
+    elif (remaining_km is not None and remaining_km <= soon_km) or (
+        remaining_days is not None and remaining_days <= soon_days
     ):
         status = "soon"
     else:
@@ -153,6 +190,29 @@ def fuel_stats(entries: Iterable[FuelEntry]) -> tuple[dict[int, float], Optional
             last_full_km, acc = entry.odometer_km, 0.0
     avg = round(total_qty / total_km * 100, 2) if total_km else None
     return per_entry, avg
+
+
+def set_fuel_level(vehicle: Vehicle, pct: int) -> None:
+    vehicle.fuel_level_pct = max(0, min(100, int(pct)))
+    vehicle.fuel_level_at = utcnow()
+
+
+def fuel_gauge(vehicle: Vehicle, avg_consumption: Optional[float]) -> dict:
+    """% apuntado → cuánto queda (con la capacidad) → autonomía (con el consumo medio, por 100 km)."""
+    unit = "kWh" if vehicle.fuel_type == "electric" else "L"
+    out = {"pct": vehicle.fuel_level_pct, "at": vehicle.fuel_level_at, "capacity": vehicle.tank_capacity,
+           "capacity_source": vehicle.tank_capacity_source, "unit": unit, "left": None, "range_km": None}
+    if vehicle.fuel_level_pct is not None and vehicle.tank_capacity:
+        out["left"] = round(vehicle.tank_capacity * vehicle.fuel_level_pct / 100, 1)
+        if avg_consumption:
+            out["range_km"] = int(out["left"] / avg_consumption * 100)
+    return out
+
+
+def fuel_level_after_refuel(vehicle: Vehicle, entry_date, full_tank: bool) -> None:
+    """Repostar lleno hoy deja el depósito al 100 % (uno antiguo, apuntado tarde, no toca el nivel)."""
+    if full_tank and entry_date >= utcnow().date():
+        set_fuel_level(vehicle, 100)
 
 
 def bump_odometer(vehicle: Vehicle, km: Optional[float]) -> None:

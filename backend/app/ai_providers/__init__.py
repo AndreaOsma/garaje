@@ -1,5 +1,6 @@
 # GENERADO desde dev/lib/ai-providers (Homelab): no lo edites aquí, edita la librería y ejecuta su sync.mjs
-"""Proveedor de IA que pone cada usuario: Claude, Gemini, OpenRouter o un servidor Ollama.
+"""Proveedor de IA que pone cada usuario: Claude, Gemini, OpenRouter, un servidor Ollama o cualquier
+orquestador compatible con OpenAI (LiteLLM, vLLM, LM Studio, LocalAI, AgentCraft…).
 
 Librería compartida (dev/lib/ai-providers). Cada app lleva una copia generada por sync.mjs:
 no la edites en la app.
@@ -9,7 +10,9 @@ no la edites en la app.
   los backups. La clave de cifrado sale de la variable ``secret_env`` o de
   ``<data_dir>/ai-secret.key`` (0600, se crea la primera vez). La API nunca devuelve la clave.
 - Si el usuario no ha configurado nada, se usa lo que traiga el servidor por entorno (``fallback``):
-  así una instalación existente sigue funcionando hasta que su dueña ponga lo suyo.
+  así una instalación existente sigue funcionando hasta que su dueña ponga lo suyo. Las mismas cinco
+  variables en todas las apps (``Fallback.from_env()``): AI_PROVIDER, AI_MODEL, AI_BASE_URL,
+  AI_API_KEY o AI_API_KEY_FILE (secreto montado por Docker/Nomad/Kubernetes).
 
 Uso: ``store = AiStore(data_dir, secret_env="GARAJE_SECRET_KEY", fallback=...)``,
 ``text = complete(store.resolve(), system, prompt, images=[...], json_mode=True)``.
@@ -28,7 +31,7 @@ from urllib.parse import urlparse
 import httpx
 from cryptography.fernet import Fernet, InvalidToken
 
-Provider = Literal["anthropic", "gemini", "openrouter", "ollama"]
+Provider = Literal["anthropic", "gemini", "openrouter", "ollama", "openai"]
 
 PROVIDERS: dict[str, dict[str, Any]] = {
     "anthropic": {
@@ -63,7 +66,21 @@ PROVIDERS: dict[str, dict[str, Any]] = {
         "models": {"text": "qwen2.5:7b", "vision": "llava"},
         "help": "La URL de tu servidor Ollama. La clave es opcional (si va detrás de un proxy con token).",
     },
+    "openai": {
+        "label": "Orquestador compatible con OpenAI (LiteLLM, vLLM, LM Studio, AgentCraft…)",
+        "needs_key": False,
+        "needs_url": True,
+        "url": "http://localhost:4000/v1",
+        "models": {"text": "", "vision": ""},
+        "help": "La URL base de la API (la que termina en /v1) y el nombre del modelo tal como lo publica. "
+                "La clave es opcional: ponla si tu orquestador la pide.",
+    },
 }
+
+# Nombres que la gente escribe en AI_PROVIDER → el proveedor de la librería.
+ALIASES = {"claude": "anthropic", "anthropic": "anthropic", "gemini": "gemini", "google": "gemini",
+           "openrouter": "openrouter", "ollama": "ollama", "openai": "openai", "openai-compatible": "openai",
+           "litellm": "openai", "vllm": "openai", "lmstudio": "openai", "orquestador": "openai", "agentcraft": "openai"}
 
 TIMEOUT_S = 180.0
 _MODEL_RE = re.compile(r"^[\w.:/@+-]{1,200}$")
@@ -110,6 +127,29 @@ class Fallback:
     base_url: str = ""
     model: str = ""
     key: Optional[str] = None
+
+    @classmethod
+    def from_env(cls, environ: Optional[dict] = None) -> "Fallback":
+        """Las variables estándar, iguales en todas las apps (para el Dockerfile, docker-compose o Nomad):
+
+        AI_PROVIDER   claude | gemini | openrouter | ollama | openai (orquestador: litellm, vllm…)
+        AI_MODEL      opcional salvo con openai
+        AI_BASE_URL   opcional salvo con ollama y openai
+        AI_API_KEY    o AI_API_KEY_FILE con la ruta de un secreto montado (preferible)
+        """
+        env = os.environ if environ is None else environ
+        provider = ALIASES.get((env.get("AI_PROVIDER") or "").strip().lower())
+        if not provider:
+            return cls()
+        key = (env.get("AI_API_KEY") or "").strip() or None
+        key_file = (env.get("AI_API_KEY_FILE") or "").strip()
+        if not key and key_file:
+            try:
+                key = Path(key_file).read_text(encoding="utf-8").strip() or None
+            except OSError:
+                key = None
+        return cls(provider=provider, base_url=(env.get("AI_BASE_URL") or "").strip().rstrip("/"),
+                   model=(env.get("AI_MODEL") or "").strip(), key=key)
 
 
 def validate_settings(provider: Optional[str], base_url: str, model: str) -> tuple[Optional[str], str, str]:
@@ -283,15 +323,16 @@ def complete(r: Resolved, system: str, prompt: str, *, images: Optional[list[str
                 if resp.status_code >= 400:
                     raise _error(resp, "Ollama")
                 return resp.json().get("message", {}).get("content", "")
-            # gemini y openrouter: API compatible con OpenAI (/chat/completions)
+            # gemini, openrouter y cualquier orquestador: API compatible con OpenAI (/chat/completions)
             parts: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
             parts += [{"type": "image_url", "image_url": {"url": f"data:{_guess_mime(b)};base64,{b}"}} for b in images]
             body = {"model": r.model, "max_tokens": max_tokens,
                     "messages": [{"role": "system", "content": system}, {"role": "user", "content": parts if images else prompt}]}
             if json_mode:
                 body["response_format"] = {"type": "json_object"}
-            who = "Gemini" if r.provider == "gemini" else "OpenRouter"
-            resp = http.post(f"{r.base_url}/chat/completions", headers={"Authorization": f"Bearer {r.key}"}, json=body)
+            who = {"gemini": "Gemini", "openrouter": "OpenRouter"}.get(r.provider or "", "El orquestador")
+            headers = {"Authorization": f"Bearer {r.key}"} if r.key else {}
+            resp = http.post(f"{r.base_url}/chat/completions", headers=headers, json=body)
             if resp.status_code >= 400:
                 raise _error(resp, who)
             choices = resp.json().get("choices") or [{}]

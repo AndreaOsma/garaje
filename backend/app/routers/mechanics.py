@@ -106,7 +106,7 @@ def delete_issue(issue_id: int, vehicle: Vehicle = Depends(get_vehicle), db: Ses
 
 def _get_checklist(db: Session, vehicle: Vehicle, checklist_id: int) -> Checklist:
     cl = db.get(Checklist, checklist_id)
-    if cl is None or cl.vehicle_id not in (None, vehicle.id):
+    if cl is None or cl.vehicle_id not in (None, vehicle.id) or cl.vehicle_kind not in (None, vehicle.kind):
         raise HTTPException(status_code=404, detail="Revisión no encontrada")
     return cl
 

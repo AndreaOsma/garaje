@@ -1,5 +1,6 @@
 /* GENERADO desde dev/lib/ai-providers (Homelab): no lo edites aquí, edita la librería y ejecuta su sync.mjs */
 import { useEffect, useId, useState } from "react";
+import { Check, Icon, TriangleAlert } from "../icons";
 import "./ai-settings.css";
 
 type ProviderMeta = { label: string; needs_key: boolean; needs_url: boolean; url: string; help: string; model: string };
@@ -54,7 +55,7 @@ export function AiSettingsCard({ apiBase = "/api", purpose }: { apiBase?: string
     call<AiPublic>(`${apiBase}/ai`).then(apply).catch((e: Error) => setLoadError(e.message));
   }, [apiBase]);
 
-  if (loadError) return <section className="ai-card"><p className="ai-card__msg is-error" role="alert">⚠ {loadError}</p></section>;
+  if (loadError) return <section className="ai-card"><p className="ai-card__msg is-error" role="alert"><Icon svg={TriangleAlert} /> {loadError}</p></section>;
   if (!data) return <section className="ai-card"><p className="ai-card__muted" role="status">Cargando…</p></section>;
 
   const meta = provider ? data.providers[provider] : null;
@@ -123,7 +124,7 @@ export function AiSettingsCard({ apiBase = "/api", purpose }: { apiBase?: string
 
         {meta && (
           <>
-            {(meta.needs_key || provider === "ollama") && (
+            {(meta.needs_key || meta.needs_url) && (
               <div className="ai-card__field">
                 <label htmlFor={ids.key}>{meta.needs_key ? "Clave de API" : "Token (opcional)"}</label>
                 <input id={ids.key} type="password" autoComplete="off" spellCheck={false} value={key}
@@ -140,7 +141,7 @@ export function AiSettingsCard({ apiBase = "/api", purpose }: { apiBase?: string
             )}
             <div className="ai-card__field">
               <label htmlFor={ids.model}>Modelo{data.kind === "vision" ? " (con visión)" : ""}</label>
-              <input id={ids.model} value={model} spellCheck={false} placeholder={meta.model} onChange={(e) => setModel(e.target.value)} />
+              <input id={ids.model} value={model} spellCheck={false} placeholder={meta.model || "El nombre que publica tu orquestador"} onChange={(e) => setModel(e.target.value)} />
               <small className="ai-card__muted">Vacío = {meta.model}</small>
             </div>
           </>
@@ -155,7 +156,7 @@ export function AiSettingsCard({ apiBase = "/api", purpose }: { apiBase?: string
         </div>
         {msg && (
           <p className={`ai-card__msg ${msg.kind === "error" ? "is-error" : msg.kind === "ok" ? "is-ok" : ""}`} role={msg.kind === "error" ? "alert" : "status"}>
-            {msg.kind === "ok" ? "✓ " : msg.kind === "error" ? "⚠ " : ""}{msg.text}
+            {msg.kind === "ok" ? <><Icon svg={Check} /> </> : msg.kind === "error" ? <><Icon svg={TriangleAlert} /> </> : null}{msg.text}
           </p>
         )}
       </form>

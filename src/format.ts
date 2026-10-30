@@ -1,3 +1,4 @@
+import { Car, Motorcycle } from "./vendor/icons";
 const nf0 = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 });
 const eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
 
@@ -37,6 +38,9 @@ export function today(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+
+export const KIND_LABELS: Record<string, string> = { car: "Coche", motorcycle: "Moto" };
+export const KIND_ICONS: Record<string, string> = { car: Car, motorcycle: Motorcycle };
 
 export const FUEL_LABELS: Record<string, string> = {
   gasoline: "Gasolina",

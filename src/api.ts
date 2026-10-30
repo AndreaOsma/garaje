@@ -1,12 +1,18 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
+import type { GameState } from "./vendor/learn-game/types";
+
+export type { GameState };
+
 export type FuelType = "gasoline" | "diesel" | "hybrid" | "phev" | "electric" | "lpg";
+export type VehicleKind = "car" | "motorcycle";
 
 export type Monitor = { name: string; complete: boolean };
 
 export type Vehicle = {
   id: number;
   name: string;
+  kind: VehicleKind;
   make: string;
   model: string;
   year: number | null;
@@ -19,6 +25,13 @@ export type Vehicle = {
   purchase_date: string | null;
   odometer_km: number;
   odometer_updated_at: string | null;
+  /** Lo que queda en el depósito (o batería), en %, y cuándo se apuntó. */
+  fuel_level_pct: number | null;
+  fuel_level_at: string | null;
+  /** Litros (kWh útiles si es eléctrico). manual | web (Claude con búsqueda) | ia (orientativo). */
+  tank_capacity: number | null;
+  tank_capacity_source: "manual" | "web" | "ia" | null;
+  tank_capacity_note: string | null;
   notes: string;
   archived: boolean;
   has_ingest_token: boolean;
@@ -39,6 +52,10 @@ export type VehicleInput = Omit<
   Vehicle,
   | "id"
   | "odometer_updated_at"
+  | "fuel_level_pct"
+  | "fuel_level_at"
+  | "tank_capacity_source"
+  | "tank_capacity_note"
   | "has_ingest_token"
   | "mil_on"
   | "ecu_dtc_count"
@@ -169,8 +186,19 @@ export type Alert = {
   target: string;
 };
 
+export type FuelGauge = {
+  pct: number | null;
+  at: string | null;
+  capacity: number | null;
+  capacity_source: string | null;
+  unit: string;
+  left: number | null;
+  range_km: number | null;
+};
+
 export type Dashboard = {
   vehicle: Vehicle;
+  fuel: FuelGauge | null;
   alerts: Alert[];
   costs: {
     total: number;
@@ -288,7 +316,106 @@ export type Mechanics = {
 
 export type TwinItem = { kind: "dtc" | "issue" | "task" | "reading"; level: "ok" | "info" | "warn" | "danger"; text: string; target: string };
 export type TwinComponent = { id: string; name: string; status: "ok" | "info" | "warn" | "danger"; items: TwinItem[] };
-export type Twin = { fuel_type: string; components: TwinComponent[]; unassigned: TwinItem[] };
+export type Twin = { fuel_type: string; kind: VehicleKind; components: TwinComponent[]; unassigned: TwinItem[] };
+
+// ---- Carnés ----------------------------------------------------------------
+
+export type LicenseStatus = "none" | "planning" | "studying" | "obtained";
+export type ExamFormat = { questions: number; max_errors: number; minutes: number; official: boolean };
+export type License = {
+  code: string;
+  name: string;
+  icon: string;
+  group: "moto" | "coche" | "camion" | "autobus";
+  allows: string;
+  age: number;
+  requires: { code: string; years: number }[];
+  included_by: string[];
+  notes: string;
+  steps: { key: string; label: string; done_on: string | null }[];
+  status: LicenseStatus;
+  next_exam_on: string | null;
+  obtained_on: string | null;
+  user_notes: string;
+  requirements: { label: string; state: "ok" | "wait" | "missing" | "unknown"; until: string | null }[];
+  covered_by: string | null;
+  exam: ExamFormat;
+  course: { id: number; lessons_total: number; lessons_done: number } | null;
+  dgt_url: string;
+};
+export type LicenseProgressInput = {
+  status: LicenseStatus;
+  steps: Record<string, string | null>;
+  next_exam_on: string | null;
+  obtained_on: string | null;
+  notes: string;
+};
+
+export type LessonSummary = { id: number; title: string; steps: number; done: boolean; best_ratio: number | null; level: number; locked: boolean };
+export type Course = {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  source_note: string;
+  license_code: string;
+  license_name: string;
+  exam: ExamFormat;
+  lessons_total: number;
+  lessons_done: number;
+  next_lesson_id: number | null;
+  units: { id: number; title: string; extra: boolean; done: boolean; chest_claimed: boolean; lessons: LessonSummary[] }[];
+};
+export type PublicStep = {
+  id: number;
+  kind: "info" | "choice" | "truefalse" | "order" | "match";
+  prompt: string;
+  source: string;
+  hints?: string[];
+  concepts?: string[];
+  options?: string[];
+  multiple?: boolean;
+  items?: string[];
+  left?: string[];
+  right?: string[];
+  explanation?: string;
+  lesson_title?: string;
+  course_title?: string;
+  unit_title?: string;
+};
+export type LessonFull = {
+  id: number;
+  title: string;
+  unit_title: string;
+  course_id: number;
+  license_code: string;
+  done: boolean;
+  next_lesson_id: number | null;
+  steps: PublicStep[];
+};
+export type AnswerResult = {
+  correct: boolean;
+  solution: string;
+  explanation: string;
+  source: string;
+  xp: number;
+  option_feedback: string[];
+  confident_wrong: boolean;
+};
+export type CompleteResult = {
+  xp: number;
+  perfect: boolean;
+  ratio: number;
+  level: number;
+  streak: number;
+  unit_done: boolean;
+  unit_id: number;
+  chest_available: boolean;
+  game: GameState;
+};
+export type ConceptMastery = { concept: string; steps: number; correct: number; wrong: number; confident_wrong: number; mastery: number | null };
+export type StepSet = { title: string; steps: PublicStep[]; minutes?: number; max_errors?: number };
+export type LearnSettings = { daily_xp: number; sounds: boolean };
 
 export type IngestResult = {
   session_id: number | null;
@@ -346,6 +473,9 @@ export const api = {
     remove: (id: number) => request<void>(`/vehicles/${id}`, { method: "DELETE" }),
     setOdometer: (id: number, odometer_km: number) => request<Vehicle>(`/vehicles/${id}/odometer`, json("POST", { odometer_km })),
     dashboard: (id: number) => request<Dashboard>(`/vehicles/${id}/dashboard`),
+    setFuelLevel: (id: number, pct: number) => request<Vehicle>(`/vehicles/${id}/fuel-level`, json("POST", { pct })),
+    researchTank: (id: number) => request<Vehicle>(`/vehicles/${id}/tank/research`, { method: "POST" }),
+    confirmTank: (id: number) => request<Vehicle>(`/vehicles/${id}/tank/confirm`, { method: "POST" }),
     rotateToken: (id: number) => request<{ token: string }>(`/vehicles/${id}/ingest-token`, { method: "POST" }),
     revokeToken: (id: number) => request<void>(`/vehicles/${id}/ingest-token`, { method: "DELETE" }),
   },
@@ -419,6 +549,42 @@ export const api = {
       id: number,
       body: { status: "accepted" | "dismissed"; record_type?: "fuel" | "service" | "expense"; record_id?: number; vehicle_id?: number }
     ) => request<InboxItem>(`/inbox/${id}/resolve`, json("POST", body)),
+  },
+  licenses: {
+    list: () => request<License[]>("/licenses"),
+    save: (code: string, body: LicenseProgressInput) => request<License>(`/licenses/${code}`, json("PUT", body)),
+  },
+  learn: {
+    settings: () => request<LearnSettings>("/learn/settings"),
+    saveSettings: (s: LearnSettings) => request<LearnSettings>("/learn/settings", json("PUT", s)),
+    course: (id: number) => request<Course>(`/learn/courses/${id}`),
+    exportUrl: (id: number) => `${API_BASE_URL}/learn/courses/${id}/export`,
+    importCourse: (code: string, file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      return request<Course>(`/learn/import/${code}`, { method: "POST", body: form });
+    },
+    lesson: (id: number) => request<LessonFull>(`/learn/lessons/${id}`),
+    answer: (stepId: number, response: unknown, opts: { firstTry: boolean; confidence: "high" | "low" | null; usedHint: boolean; combo: number }) =>
+      request<AnswerResult>(
+        `/learn/steps/${stepId}/answer`,
+        json("POST", { response, first_try: opts.firstTry, confidence: opts.confidence, used_hint: opts.usedHint, combo: opts.combo })
+      ),
+    complete: (lessonId: number, correct: number, total: number, seconds: number) =>
+      request<CompleteResult>(`/learn/lessons/${lessonId}/complete`, json("POST", { correct, total, seconds })),
+    completeExam: (courseId: number, correct: number, total: number) =>
+      request<{ xp: number; passed: boolean; game: GameState }>("/learn/exams/complete", json("POST", { course_id: courseId, correct, total })),
+    game: () => request<GameState>("/learn/game"),
+    claimQuest: (id: string) => request<{ gems: number; game: GameState }>(`/learn/quests/${id}/claim`, { method: "POST" }),
+    openChest: (unitId: number) => request<{ gems: number; game: GameState }>(`/learn/units/${unitId}/chest`, { method: "POST" }),
+    buy: (item: "freeze") => request<GameState>(`/learn/shop/${item}`, { method: "POST" }),
+    review: () => request<{ steps: PublicStep[] }>("/learn/review"),
+    mixedGroups: () => request<{ id: number; title: string; count: number }[]>("/learn/mixed/groups"),
+    mixed: (courses: number[]) => request<StepSet>(`/learn/mixed${courses.length ? `?courses=${courses.join(",")}` : ""}`),
+    concepts: (courseId: number) => request<ConceptMastery[]>(`/learn/courses/${courseId}/concepts`),
+    practice: (courseId: number, concept: string) =>
+      request<StepSet>(`/learn/courses/${courseId}/practice${concept ? `?concept=${encodeURIComponent(concept)}` : ""}`),
+    exam: (courseId: number) => request<StepSet>(`/learn/courses/${courseId}/exam`),
   },
   importObdFile: (vid: number, file: File, date: string) => {
     const form = new FormData();

@@ -3,9 +3,18 @@ import { api, type Vehicle, type VehicleInput } from "../api";
 import { RecordForm, type Field } from "../components/RecordForm";
 import { SoberanLink } from "../components/SoberanLink";
 import { confirmAndRun } from "../components/ui";
-import { FUEL_LABELS } from "../format";
+import { FUEL_LABELS, KIND_LABELS } from "../format";
+import { Bot, Check, Icon, KeyRound, Smartphone, TriangleAlert } from "../vendor/icons";
 
 export const VEHICLE_FIELDS: Field[] = [
+  {
+    name: "kind",
+    label: "Tipo",
+    type: "select",
+    required: true,
+    options: Object.entries(KIND_LABELS).map(([value, label]) => ({ value, label })),
+    hint: "Cambia el plan de mantenimiento, las revisiones y el modelo 3D",
+  },
   { name: "name", label: "Nombre", required: true, placeholder: "El León", wide: true },
   { name: "make", label: "Marca" },
   { name: "model", label: "Modelo" },
@@ -19,12 +28,20 @@ export const VEHICLE_FIELDS: Field[] = [
   },
   { name: "plate", label: "Matrícula" },
   { name: "odometer_km", label: "Km actuales", type: "number", min: 0, step: "1", required: true },
+  {
+    name: "tank_capacity",
+    label: "Capacidad del depósito",
+    type: "number",
+    min: 1,
+    step: "0.1",
+    hint: "Litros (kWh útiles si es eléctrico). Vacío: la busca Garaje en la ficha técnica",
+  },
   { name: "color", label: "Color", type: "color", hint: "Para el modelo 3D en vista exterior" },
   {
     name: "cylinders",
     label: "Cilindros",
     type: "select",
-    options: [2, 3, 4, 5, 6].map((n) => ({ value: String(n), label: `${n} en línea` })),
+    options: [1, 2, 3, 4, 5, 6].map((n) => ({ value: String(n), label: n === 1 ? "1 (monocilíndrico)" : `${n} en línea` })),
     hint: "Para el motor 3D (vacío = 4)",
   },
   { name: "engine", label: "Motor", placeholder: "1.6 TDI 115 CV", advanced: true },
@@ -69,7 +86,7 @@ function CopyBox({ label, value, placeholder = false }: { label: string; value: 
             )
           }
         >
-          {copied ? "✓ Copiado" : "Copiar"}
+          {copied ? <><Icon svg={Check} /> Copiado</> : "Copiar"}
         </button>
       </div>
     </div>
@@ -104,7 +121,7 @@ function ObdConnection({ vehicle, onVehicleChanged }: { vehicle: Vehicle; onVehi
 
       <div className="token-row">
         <p>
-          {vehicle.has_ingest_token ? "🔑 Token de ingesta activo." : "Sin token: genera uno para automatizar la subida de datos."}
+          {vehicle.has_ingest_token ? <><Icon svg={KeyRound} /> Token de ingesta activo.</> : "Sin token: genera uno para automatizar la subida de datos."}
         </p>
         <div className="panel__actions">
           <button type="button" className="btn btn--primary btn--sm" onClick={rotate} disabled={state === "loading"}>
@@ -128,7 +145,7 @@ function ObdConnection({ vehicle, onVehicleChanged }: { vehicle: Vehicle; onVehi
       </div>
       {state === "error" && (
         <p className="form-error" role="alert">
-          ⚠️ {error}
+          <Icon svg={TriangleAlert} /> {error}
         </p>
       )}
       {token && (
@@ -141,7 +158,7 @@ function ObdConnection({ vehicle, onVehicleChanged }: { vehicle: Vehicle; onVehi
       )}
 
       <details className="howto" open>
-        <summary>📱 iPhone + Car Scanner (Atajo de iOS): CSV o TXT</summary>
+        <summary><Icon svg={Smartphone} /> iPhone + Car Scanner (Atajo de iOS): CSV o TXT</summary>
         <ol>
           <li>
             Abre <strong>Atajos</strong> → nuevo atajo → activa <em>Mostrar en hoja para compartir</em> y que acepte <em>Archivos</em>.
@@ -166,14 +183,14 @@ function ObdConnection({ vehicle, onVehicleChanged }: { vehicle: Vehicle; onVehi
           </li>
         </ol>
         <p className="muted small">
-          ⚠️ Garaje es privado: el iPhone necesita <strong>Tailscale activo</strong> (si no, la subida ni siquiera llega). Sirve el CSV
+          <Icon svg={TriangleAlert} /> Garaje es privado: el iPhone necesita <strong>Tailscale activo</strong> (si no, la subida ni siquiera llega). Sirve el CSV
           de una grabación o el TXT de un informe de diagnóstico (con sus códigos de avería). También puedes subirlos a mano en
           Diagnóstico.
         </p>
       </details>
 
       <details className="howto">
-        <summary>🤖 Agente automático (Raspberry Pi / portátil + ELM327)</summary>
+        <summary><Icon svg={Bot} /> Agente automático (Raspberry Pi / portátil + ELM327)</summary>
         <p>
           Lee sensores, códigos de avería (confirmados, pendientes y permanentes), monitores de la ITV, VIN, tensión de batería y odómetro
           (si el coche lo expone), y los sube solo. Sin conexión, guarda los lotes y los envía al volver a casa.
@@ -215,6 +232,8 @@ export function VehicleSettings({ vehicle, detailed, onVehicleChanged, onDeleted
         />
       </section>
 
+      <TankCapacity vehicle={vehicle} onVehicleChanged={onVehicleChanged} />
+
       <ObdConnection vehicle={vehicle} onVehicleChanged={onVehicleChanged} />
 
       <SoberanLink vehicle={vehicle} onVehicleChanged={onVehicleChanged} />
@@ -239,5 +258,72 @@ export function VehicleSettings({ vehicle, detailed, onVehicleChanged, onDeleted
         </button>
       </section>
     </div>
+  );
+}
+
+const TANK_SOURCE: Record<string, string> = {
+  manual: "La escribiste tú",
+  web: "Buscada en la ficha técnica (con fuentes)",
+  ia: "Orientativa: calculada por la IA sin consultar internet",
+};
+
+/** De dónde sale la capacidad del depósito y botón para buscarla (si no la escribiste tú). */
+function TankCapacity({ vehicle, onVehicleChanged }: { vehicle: Vehicle; onVehicleChanged: () => void }) {
+  const [state, setState] = useState<"idle" | "loading" | "error" | "done">("idle");
+  const [error, setError] = useState("");
+  const unit = vehicle.fuel_type === "electric" ? "kWh" : "L";
+  async function confirm() {
+    setState("loading");
+    setError("");
+    try {
+      await api.vehicles.confirmTank(vehicle.id);
+      setState("done");
+      onVehicleChanged();
+    } catch (err) {
+      setState("error");
+      setError(err instanceof Error ? err.message : "No se pudo confirmar");
+    }
+  }
+  async function search() {
+    setState("loading");
+    setError("");
+    try {
+      await api.vehicles.researchTank(vehicle.id);
+      setState("done");
+      onVehicleChanged();
+    } catch (err) {
+      setState("error");
+      setError(err instanceof Error ? err.message : "No se pudo buscar");
+    }
+  }
+  return (
+    <section className="panel" aria-labelledby="tank-title">
+      <h2 id="tank-title">Depósito</h2>
+      {vehicle.tank_capacity ? (
+        <p>
+          <strong>{vehicle.tank_capacity} {unit}</strong>
+          {vehicle.tank_capacity_source && <span className="muted"> · {TANK_SOURCE[vehicle.tank_capacity_source] ?? vehicle.tank_capacity_source}</span>}
+          {vehicle.tank_capacity_note && <><br /><span className="muted small">{vehicle.tank_capacity_note}</span></>}
+        </p>
+      ) : (
+        <p className="muted">Sin capacidad todavía. Con ella, Garaje calcula cuánto queda y para cuántos km cuando le dices el % (en la portada o a ágora).</p>
+      )}
+      {vehicle.tank_capacity_source !== "manual" && (
+        <div className="form-actions">
+          {vehicle.tank_capacity && (vehicle.tank_capacity_source === "ia" || vehicle.tank_capacity_source === "web") && (
+            // Lo que propone la IA se revisa: si cuadra con tu manual, pasa a ser tuyo y no se vuelve a tocar.
+            <button type="button" className="btn btn--sm btn--primary" onClick={confirm} disabled={state === "loading"}>
+              Es correcta
+            </button>
+          )}
+          <button type="button" className="btn btn--sm" onClick={search} disabled={state === "loading" || !vehicle.make}>
+            {state === "loading" ? "Buscando… (hasta un minuto)" : vehicle.tank_capacity ? "Volver a buscar" : "Buscar en la ficha técnica"}
+          </button>
+        </div>
+      )}
+      {!vehicle.make && <p className="muted small">Pon antes la marca y el modelo.</p>}
+      {state === "done" && <p className="muted small" role="status">Capacidad actualizada.</p>}
+      {state === "error" && <p className="form-error" role="alert">{error}</p>}
+    </section>
   );
 }

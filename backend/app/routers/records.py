@@ -34,6 +34,7 @@ def create_fuel(payload: schemas.FuelIn, vehicle: Vehicle = Depends(get_vehicle)
     entry = FuelEntry(vehicle_id=vehicle.id, **payload.to_record())
     db.add(entry)
     services.bump_odometer(vehicle, entry.odometer_km)
+    services.fuel_level_after_refuel(vehicle, entry.date, entry.full_tank)
     db.commit()
     db.refresh(entry)
     return entry

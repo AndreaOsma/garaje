@@ -6,8 +6,9 @@ import { CrudList } from "./CrudList";
 import { Modal } from "./Modal";
 import { RecordForm, type Field } from "./RecordForm";
 import { confirmAndRun } from "./ui";
+import { Check, CircleCheck, ClockAlert, Icon, Info, OctagonAlert, Pencil, Play, Trash2, TriangleAlert, Wrench } from "../vendor/icons";
 
-const SEVERITY_ICON = { info: "ℹ️", limiting: "⚠️", grounding: "⛔" } as const;
+const SEVERITY_ICON = { info: Info, limiting: TriangleAlert, grounding: OctagonAlert } as const;
 
 const ISSUE_FIELDS: Field[] = [
   { name: "title", label: "Qué pasa", required: true, wide: true, placeholder: "Chirrido al frenar, fuga bajo el motor…" },
@@ -73,7 +74,7 @@ export function IssuesPanel({ vehicle, issues, detailed, onChanged }: { vehicle:
             </button>
           ) : (
             <button type="button" className="btn btn--sm btn--ghost" onClick={() => setResolving(i)}>
-              ✓ Resolver
+              <Icon svg={Check} /> Resolver
             </button>
           )
         }
@@ -81,7 +82,7 @@ export function IssuesPanel({ vehicle, issues, detailed, onChanged }: { vehicle:
           <div className={`issue issue--${i.severity}${i.resolved_on ? " is-resolved" : ""}`}>
             <div className="card__title">
               <strong>
-                <span aria-hidden>{i.resolved_on ? "✅" : SEVERITY_ICON[i.severity as keyof typeof SEVERITY_ICON]} </span>
+                <Icon svg={i.resolved_on ? CircleCheck : SEVERITY_ICON[i.severity as keyof typeof SEVERITY_ICON]} />{" "}
                 {i.title}
               </strong>
               <span className={`badge badge--${i.resolved_on ? "done" : i.severity === "grounding" ? "overdue" : i.severity === "limiting" ? "soon" : "unknown"}`}>
@@ -96,7 +97,7 @@ export function IssuesPanel({ vehicle, issues, detailed, onChanged }: { vehicle:
               {i.resolved_on && <span>Resuelta el {date(i.resolved_on)}</span>}
             </div>
             {(detailed || !i.resolved_on) && i.description && <p className="issue__desc">{i.description}</p>}
-            {i.resolved_on && i.resolution && <p className="issue__desc">🔧 {i.resolution}</p>}
+            {i.resolved_on && i.resolution && <p className="issue__desc"><Icon svg={Wrench} /> {i.resolution}</p>}
           </div>
         )}
       />
@@ -200,7 +201,7 @@ export function ChecklistsPanel({ vehicle, mechanics, detailed, onChanged }: { v
               <div className="card__body">
                 <div className="card__title">
                   <strong>{cl.name}</strong>
-                  {cl.due && <span className="badge badge--soon">◔ Toca</span>}
+                  {cl.due && <span className="badge badge--soon"><Icon svg={ClockAlert} /> Toca</span>}
                 </div>
                 <div className="card__meta">
                   <span>{count} puntos</span>
@@ -214,10 +215,10 @@ export function ChecklistsPanel({ vehicle, mechanics, detailed, onChanged }: { v
               </div>
               <div className="card__actions">
                 <button type="button" className="btn btn--primary btn--sm" onClick={() => setRunning(cl)}>
-                  ▶ Empezar
+                  <Icon svg={Play} /> Empezar
                 </button>
                 <button type="button" className="icon-btn" aria-label={`Editar ${cl.name}`} title="Editar" onClick={() => setEditing(cl)}>
-                  ✎
+                  <Icon svg={Pencil} />
                 </button>
                 <button
                   type="button"
@@ -232,7 +233,7 @@ export function ChecklistsPanel({ vehicle, mechanics, detailed, onChanged }: { v
                     )
                   }
                 >
-                  🗑
+                  <Icon svg={Trash2} />
                 </button>
               </div>
             </li>

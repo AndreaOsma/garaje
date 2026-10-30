@@ -1,53 +1,57 @@
+/* Garaje — estética común del homelab (src/vendor/design-system, importado en main.tsx antes que esta
+   hoja): aquí solo se apuntan las variables propias a --ds-*. light-dark() sigue a color-scheme, que
+   fija la clase de tema de .app-shell. Identidad: turquesa de taller. */
+:root:has(.app-shell.theme-dark) {
+  color-scheme: dark;
+}
+:root:has(.app-shell.theme-light) {
+  color-scheme: light;
+}
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ds-accent: light-dark(#0e7490, #22d3ee);
+  --ds-on-accent: light-dark(#ffffff, #06202a);
   line-height: 1.45;
 }
 
 :root.native-shell {
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, Roboto, "Segoe UI", sans-serif;
+  --ds-font-sans: -apple-system, system-ui, BlinkMacSystemFont, Roboto, "Segoe UI", sans-serif;
 }
 
 * {
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0;
-  overscroll-behavior-y: none;
-}
-
 /* ---- Tokens ------------------------------------------------------------- */
 
 .app-shell {
-  --primary: #0e7490;
-  --primary-strong: #0b5c72;
-  --on-primary: #ffffff;
-  --accent-soft: rgba(14, 116, 144, 0.12);
-  --bg: #eef3f8;
-  --bg-gradient: radial-gradient(1200px 600px at 10% -10%, rgba(14, 116, 144, 0.14), transparent 60%),
-    radial-gradient(900px 500px at 110% 0%, rgba(99, 102, 241, 0.1), transparent 60%);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(14, 116, 144, 0.16);
-  --glass-panel-bg: rgba(250, 252, 255, 0.96);
-  --glass-blur: 18px;
-  --surface-soft: rgba(255, 255, 255, 0.55);
-  --border-soft: rgba(15, 23, 42, 0.1);
-  --text-main: #0f1b2d;
-  --text-muted: #4b5a70;
-  --shadow-soft: 0 10px 34px rgba(15, 23, 42, 0.07);
-  --focus-ring: 0 0 0 3px rgba(14, 116, 144, 0.35);
+  --primary: var(--ds-accent);
+  --primary-strong: light-dark(#0b5c72, #67e8f9);
+  --on-primary: var(--ds-on-accent);
+  --accent-soft: var(--ds-accent-soft);
+  --bg: var(--ds-bg);
+  --bg-gradient: radial-gradient(1200px 600px at 10% -10%, var(--ds-glow), transparent 60%),
+    radial-gradient(900px 500px at 110% 0%, rgba(99, 102, 241, 0.08), transparent 60%), var(--ds-bg-gradient);
+  --glass-bg: var(--ds-panel);
+  --glass-border: var(--ds-border);
+  --glass-panel-bg: var(--ds-panel-strong);
+  --glass-blur: var(--ds-blur);
+  --surface-soft: light-dark(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.05));
+  --border-soft: var(--ds-border);
+  --text-main: var(--ds-text);
+  --text-muted: var(--ds-muted);
+  --shadow-soft: var(--ds-shadow);
+  --focus-ring: var(--ds-focus-ring);
   /* Estados (reservados: no se usan para series de datos). */
-  --ok: #15803d;
-  --ok-bg: rgba(21, 128, 61, 0.12);
-  --warn: #a16207;
-  --warn-bg: rgba(202, 138, 4, 0.16);
-  --danger: #b91c1c;
-  --danger-bg: rgba(220, 38, 38, 0.12);
-  --info: #1d4ed8;
-  --info-bg: rgba(37, 99, 235, 0.1);
-  --chart-line: #0e7490;
-  --chart-grid: rgba(15, 23, 42, 0.08);
+  --ok: var(--ds-ok);
+  --ok-bg: color-mix(in srgb, var(--ds-ok) 12%, transparent);
+  --warn: var(--ds-warn);
+  --warn-bg: color-mix(in srgb, var(--ds-warn) 14%, transparent);
+  --danger: var(--ds-danger);
+  --danger-bg: color-mix(in srgb, var(--ds-danger) 12%, transparent);
+  --info: light-dark(#1d4ed8, #93c5fd);
+  --info-bg: color-mix(in srgb, var(--info) 10%, transparent);
+  --chart-line: var(--ds-accent);
+  --chart-grid: light-dark(rgba(15, 23, 42, 0.08), rgba(226, 232, 240, 0.08));
 
   min-height: 100vh;
   display: flex;
@@ -55,35 +59,6 @@ body {
   background: var(--bg-gradient), var(--bg);
   background-attachment: fixed;
   color: var(--text-main);
-}
-
-.app-shell.theme-dark {
-  --primary: #22d3ee;
-  --primary-strong: #67e8f9;
-  --on-primary: #06202a;
-  --accent-soft: rgba(34, 211, 238, 0.12);
-  --bg: #0b1220;
-  --bg-gradient: radial-gradient(1200px 600px at 10% -10%, rgba(34, 211, 238, 0.1), transparent 60%),
-    radial-gradient(900px 500px at 110% 0%, rgba(129, 140, 248, 0.1), transparent 60%);
-  --glass-bg: rgba(20, 30, 48, 0.66);
-  --glass-border: rgba(103, 232, 249, 0.14);
-  --glass-panel-bg: rgba(15, 23, 38, 0.97);
-  --surface-soft: rgba(255, 255, 255, 0.05);
-  --border-soft: rgba(226, 232, 240, 0.1);
-  --text-main: #e6edf7;
-  --text-muted: #9fb0c8;
-  --shadow-soft: 0 10px 34px rgba(0, 0, 0, 0.35);
-  --focus-ring: 0 0 0 3px rgba(34, 211, 238, 0.4);
-  --ok: #4ade80;
-  --ok-bg: rgba(74, 222, 128, 0.12);
-  --warn: #facc15;
-  --warn-bg: rgba(250, 204, 21, 0.12);
-  --danger: #f87171;
-  --danger-bg: rgba(248, 113, 113, 0.14);
-  --info: #93c5fd;
-  --info-bg: rgba(147, 197, 253, 0.12);
-  --chart-line: #22d3ee;
-  --chart-grid: rgba(226, 232, 240, 0.08);
 }
 
 /* ---- Base --------------------------------------------------------------- */
@@ -160,6 +135,7 @@ code {
   z-index: 20;
 }
 
+.app-header__title { margin: 0; font: inherit; }
 .app-header__brand {
   display: flex;
   align-items: center;
@@ -268,7 +244,7 @@ code {
     padding: 6px 1px;
     flex: 1;
     border-radius: 12px;
-    font-size: 0.64rem;
+    font-size: 0.75rem;
     min-width: 0;
   }
 
@@ -300,6 +276,16 @@ code {
 
   .app-header__vehicle {
     display: none;
+  }
+
+  /* Cabecera fija con fondo opaco: el contenido no se transparenta al hacer scroll. */
+  .app-header {
+    background: linear-gradient(var(--glass-bg), var(--glass-bg)), var(--bg);
+  }
+
+  /* Los saltos a anclas no quedan bajo la cabecera fija. */
+  html {
+    scroll-padding-top: calc(60px + env(safe-area-inset-top));
   }
 
   /* Acciones de tarjeta en su propia fila: el texto usa todo el ancho. */
@@ -1147,7 +1133,7 @@ select option {
 
 .line-chart__axis {
   fill: var(--text-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1675,7 +1661,7 @@ select option {
   display: inline-block;
   padding: 0 6px;
   border-radius: 6px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   background: var(--accent-soft);
   color: var(--primary);
   vertical-align: middle;
@@ -1732,7 +1718,7 @@ select option {
   padding: 4px 8px;
   border-radius: 999px;
   background: var(--glass-panel-bg);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .twin__dot {
@@ -2104,3 +2090,412 @@ input[type="color"] {
   font-size: 0.78rem;
   font-weight: 600;
 }
+
+/* ---- Carnés (juego compartido learn-game) ------------------------------- */
+
+/* Tokens que usa dev/lib/learn-game y Garaje no tenía. */
+.app-shell {
+  --glass-strong: var(--ds-panel-strong);
+  --primary-ink: var(--ds-on-accent);
+  --gradient: linear-gradient(135deg, var(--ds-accent) 0%, color-mix(in srgb, var(--ds-accent) 82%, light-dark(black, white)) 100%);
+  --crit: var(--danger);
+  --radius: 18px;
+}
+
+/* Tarjetas del juego (StreakCard, Quests, Shop…): mismas que .panel. */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+  min-width: 0;
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.card__title {
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* El reproductor ocupa toda la pantalla: sin cabecera ni pie de la app. */
+.app-shell.is-player .app-main {
+  padding: 0;
+  max-width: none;
+}
+
+.licenses {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.licenses__disclaimer {
+  text-align: center;
+}
+
+.back-link {
+  align-self: flex-start;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.license-held {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.license-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface-soft);
+  color: var(--text-main);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.license-chip.is-held {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.license-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.license-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface-soft);
+  color: var(--text-main);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.license-card:hover {
+  border-color: var(--primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .license-card:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.license-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.license-card__code {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.license-card__name {
+  font-weight: 600;
+}
+
+.license-card__hint {
+  color: var(--primary);
+}
+
+.license-card__progress .progress {
+  margin: 6px 0 2px;
+}
+
+.badge--info {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+.license-detail .panel__header h2 {
+  font-size: 1.15rem;
+}
+
+.license-facts {
+  list-style: none;
+  margin: 8px 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.req--ok > span[aria-hidden] {
+  color: var(--ok);
+}
+
+.req--wait > span[aria-hidden],
+.req--unknown > span[aria-hidden] {
+  color: var(--warn);
+}
+
+.req--missing > span[aria-hidden] {
+  color: var(--danger);
+}
+
+.license-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.license-form .field > span {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.segmented-field {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.segmented-field .segmented {
+  flex-wrap: wrap;
+}
+
+.license-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.license-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.license-steps li label {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.license-steps li.is-done label {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.license-steps input[type="date"] {
+  width: auto;
+}
+
+.learn-page {
+  width: 100%;
+}
+
+.learn-bar__course {
+  font-weight: 700;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: min(92vw, 420px);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.hint {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--warn-bg);
+  font-size: 0.9rem;
+}
+
+.file-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.file-btn:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.exam-units,
+.exam-results {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.exam-units li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+  font-size: 0.9rem;
+}
+
+.exam-units li.is-ok .exam-units__score {
+  color: var(--ok);
+  font-weight: 800;
+}
+
+.exam-units li.is-ko .exam-units__score {
+  color: var(--crit);
+  font-weight: 800;
+}
+
+.exam-results {
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.exam-results li {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+}
+
+.exam-results li.is-ok {
+  border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+}
+
+.exam-results li.is-ko {
+  border-color: color-mix(in srgb, var(--crit) 40%, transparent);
+}
+
+.exam-results__q {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.exam-results__q .rich p {
+  margin: 0;
+}
+
+.mastery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.mastery li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.92rem;
+}
+
+.mastery__pct {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.text-crit {
+  color: var(--crit);
+}
+
+.app-header__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface-soft);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app-header__nav.is-active {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── UX táctil (2026-10-17): Apple HIG 44 pt e iOS sin zoom (campos ≥16 px), solo en móvil y
+   pantallas táctiles; con ratón se mantiene la densidad de escritorio. ── */
+@media (max-width: 768px), (pointer: coarse) {
+  .appearance-toggle__trigger, .appearance-toggle__btn, .density-toggle__trigger { min-width: 44px; min-height: 44px; }
+  .segmented > button, .segmented__options > button, .tabs > button { min-height: 44px; padding-inline: 14px; }
+  .weekday-picker button, .chip-btn { min-height: 44px; min-width: 44px; }
+  input[type="checkbox"], input[type="radio"] { width: 24px; height: 24px; }
+  .btn, .btn--sm, .btn--ghost, .pill, .chip, .link-btn { min-height: 44px; }
+  .app-header__brand, .skip-link { min-height: 44px; display: inline-flex; align-items: center; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), select, textarea { font-size: 16px; min-height: 44px; }
+  .inline-form .btn { min-height: 44px; }
+}
+
+/* UX táctil (2026-10-17, 2ª pasada) */
+@media (max-width: 768px), (pointer: coarse) {
+  .app-header__nav { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+/* Nivel del depósito en la portada: % en texto + barra (el color no es la única señal). */
+.fuel-meter { display: inline-flex; align-items: center; gap: 0.6rem; }
+.fuel-meter__bar { display: inline-block; width: 5.5rem; height: 0.6rem; border-radius: 999px; background: var(--ds-border, rgba(127, 127, 127, 0.3)); overflow: hidden; }
+.fuel-meter__fill { display: block; height: 100%; border-radius: inherit; background: var(--ds-accent); }
+.fuel-meter__fill.is-low { background: var(--ds-danger, #c2410c); }
+
+/* Selector de tema: el menú con icono + texto y el elegido marcado (AGENTS.md → DesignUXParameters). */
+.appearance-toggle__menu { flex-direction: column; min-width: 11rem; }
+.appearance-toggle__btn { width: 100%; min-height: 44px; }
+.appearance-toggle__check { margin-left: auto; }

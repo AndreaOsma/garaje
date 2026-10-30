@@ -2,8 +2,9 @@ import { api, type Vehicle } from "../api";
 import { RecordForm } from "../components/RecordForm";
 import { EmptyState } from "../components/ui";
 import { AiSettingsCard } from "../vendor/ai-providers/AiSettingsCard";
-import { FUEL_LABELS, km } from "../format";
+import { FUEL_LABELS, KIND_ICONS, km } from "../format";
 import { VEHICLE_FIELDS } from "./VehicleSettings";
+import { Car, Icon } from "../vendor/icons";
 
 type GarageProps = {
   vehicles: Vehicle[];
@@ -25,14 +26,16 @@ export function Garage({ vehicles, detailed, onOpen, onNew }: GarageProps) {
       </header>
       {visible.length === 0 ? (
         <EmptyState title="Tu garaje está vacío">
-          Añade tu coche para llevar su mantenimiento, gastos, documentación y diagnóstico OBD.
+          Añade tu coche o tu moto para llevar su mantenimiento, gastos, documentación y diagnóstico OBD.
         </EmptyState>
       ) : (
         <ul className="vehicle-grid">
           {visible.map((v) => (
             <li key={v.id}>
               <button type="button" className={`vehicle-card${v.archived ? " is-archived" : ""}`} onClick={() => onOpen(v.id)}>
-                <span className="vehicle-card__name">{v.name}</span>
+                <span className="vehicle-card__name">
+                  <Icon svg={KIND_ICONS[v.kind] ?? Car} /> {v.name}
+                </span>
                 <span className="muted">{[v.make, v.model, v.year].filter(Boolean).join(" ") || FUEL_LABELS[v.fuel_type]}</span>
                 <span className="vehicle-card__meta">
                   <span>{km(v.odometer_km)}</span>
@@ -60,13 +63,13 @@ export function NewVehicle({ detailed, onCreated, onCancel }: NewProps) {
         <h2>Nuevo vehículo</h2>
       </header>
       <p className="muted">
-        Se crea con un plan de mantenimiento orientativo según el combustible (aceite, filtros, frenos, distribución…). Ajústalo luego a
-        tu manual.
+        Se crea con un plan de mantenimiento orientativo según el tipo y el combustible (en coche: aceite, filtros, frenos, distribución…;
+        en moto, además, cadena, horquilla y válvulas). Ajústalo luego a tu manual.
       </p>
       <RecordForm
         fields={VEHICLE_FIELDS.filter((f) => f.name !== "archived")}
         detailed={detailed}
-        initial={{ fuel_type: "gasoline", odometer_km: 0 }}
+        initial={{ kind: "car", fuel_type: "gasoline", odometer_km: 0 }}
         submitLabel="Crear vehículo"
         onSubmit={async (d) => {
           const v = await api.vehicles.create({ ...d, with_default_plan: true });

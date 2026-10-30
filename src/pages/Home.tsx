@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { api, type Vehicle } from "../api";
+import { api, type FuelGauge, type Vehicle } from "../api";
 import { km, money, num, reading, relative } from "../format";
 import type { TabId } from "../router";
 import { CarTwin } from "../components/CarTwin";
 import { ReadinessCard } from "../components/ReadinessCard";
 import { ErrorBox, Loading, Stat, StatusBadge, useLoad } from "../components/ui";
+import { CircleCheck, Icon, Info, OctagonAlert, TriangleAlert } from "../vendor/icons";
 
 type Props = {
   vehicle: Vehicle;
@@ -14,8 +15,66 @@ type Props = {
   onVehicleChanged: () => void;
 };
 
-const LEVEL_ICON = { danger: "⛔", warning: "⚠️", info: "ℹ️" } as const;
+const LEVEL_ICON = { danger: OctagonAlert, warning: TriangleAlert, info: Info } as const;
 const LEVEL_LABEL = { danger: "Urgente", warning: "Atención", info: "Aviso" } as const;
+
+/** % con una barra (texto + barra: el color no es la única señal). */
+function FuelMeter({ pct }: { pct: number }) {
+  return (
+    <span className="fuel-meter">
+      <span>{pct} %</span>
+      <span className="fuel-meter__bar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label={`Queda el ${pct} %`}>
+        <span className={`fuel-meter__fill${pct <= 15 ? " is-low" : ""}`} style={{ width: `${pct}%` }} />
+      </span>
+    </span>
+  );
+}
+
+function FuelLevelForm({ vehicle, gauge, onSaved }: { vehicle: Vehicle; gauge: FuelGauge | null; onSaved: () => void }) {
+  const [value, setValue] = useState("");
+  const [state, setState] = useState<"idle" | "loading" | "error">("idle");
+  const [error, setError] = useState("");
+  const summary = [
+    gauge?.left != null ? `≈ ${num(gauge.left, 1)} ${gauge.unit}` : null,
+    gauge?.range_km != null ? `unos ${km(gauge.range_km)}` : null,
+  ].filter(Boolean).join(" · ");
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < 0 || n > 100) {
+      setState("error");
+      setError("Pon un porcentaje entre 0 y 100");
+      return;
+    }
+    setState("loading");
+    try {
+      await api.vehicles.setFuelLevel(vehicle.id, Math.round(n));
+      setValue("");
+      setState("idle");
+      onSaved();
+    } catch (err) {
+      setState("error");
+      setError(err instanceof Error ? err.message : "No se pudo guardar");
+    }
+  }
+
+  return (
+    <>
+      {summary && <span className="muted">{summary}</span>}
+      {!gauge?.capacity && gauge?.pct != null && <span className="muted small">Sin capacidad del depósito (Ajustes) no sé cuántos litros son</span>}
+      <form className="inline-form" onSubmit={submit}>
+        <label htmlFor="fuel-input" className="sr-only">Porcentaje que queda</label>
+        <input id="fuel-input" type="number" inputMode="numeric" min={0} max={100} placeholder="% que queda"
+          value={value} onChange={(e) => setValue(e.target.value)} disabled={state === "loading"} required />
+        <button type="submit" className="btn btn--sm btn--primary" disabled={state === "loading"}>
+          {state === "loading" ? "…" : "Apuntar"}
+        </button>
+        {state === "error" && <span className="form-error" role="alert">{error}</span>}
+      </form>
+    </>
+  );
+}
 
 function OdometerForm({ vehicle, onSaved }: { vehicle: Vehicle; onSaved: () => void }) {
   const [value, setValue] = useState("");
@@ -92,14 +151,14 @@ export function Home({ vehicle, detailed, dark, goTab, onVehicleChanged }: Props
           <h2>Avisos</h2>
         </header>
         {data.alerts.length === 0 ? (
-          <p className="all-good">✅ Todo al día. Nada vencido, sin averías activas.</p>
+          <p className="all-good"><Icon svg={CircleCheck} /> Todo al día. Nada vencido, sin averías activas.</p>
         ) : (
           <ul className="alerts">
             {data.alerts.map((a, i) => (
               <li key={i}>
                 <button type="button" className={`alert alert--${a.level}`} onClick={() => goTab(a.target as TabId)}>
-                  <span className="alert__icon" aria-hidden>
-                    {LEVEL_ICON[a.level]}
+                  <span className="alert__icon">
+                    <Icon svg={LEVEL_ICON[a.level]} />
                   </span>
                   <span className="alert__text">
                     <span className="sr-only">{LEVEL_LABEL[a.level]}: </span>
@@ -115,6 +174,11 @@ export function Home({ vehicle, detailed, dark, goTab, onVehicleChanged }: Props
 
       <section className="stats" aria-label="Resumen">
         <Stat label="Odómetro" value={km(vehicle.odometer_km)} hint={<OdometerForm vehicle={vehicle} onSaved={onVehicleChanged} />} />
+        <Stat
+          label={vehicle.fuel_type === "electric" ? "Batería" : "Depósito"}
+          value={data.fuel?.pct != null ? <FuelMeter pct={data.fuel.pct} /> : "—"}
+          hint={<FuelLevelForm vehicle={vehicle} gauge={data.fuel} onSaved={() => { onVehicleChanged(); reload(); }} />}
+        />
         <Stat
           label="Consumo medio"
           value={data.avg_consumption != null ? `${num(data.avg_consumption, 2)}` : "—"}

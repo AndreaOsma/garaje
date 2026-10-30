@@ -1,0 +1,1043 @@
+{
+  "format": "campus-pilot-course",
+  "format_version": 1,
+  "slug": "a2-teorico",
+  "title": "Teórico específico A2",
+  "description": "El teórico de moto para quien ya tiene el B: qué permite el A2, equipamiento, la moto y su mantenimiento, técnica de conducción, normas propias de la moto y conducción preventiva.",
+  "source_note": "Contenido propio de Garaje, redactado a partir del Reglamento General de Circulación (RD 1428/2003) y del Reglamento General de Conductores (RD 818/2009). No son las preguntas oficiales de la DGT; la norma vigente manda.",
+  "subject_code": "A2",
+  "subject_name": "Motos de potencia media",
+  "units": [
+    {
+      "ref": "permiso",
+      "title": "Tu permiso y tu moto",
+      "lessons": [
+        {
+          "ref": "que-permite",
+          "title": "Qué motos puedes llevar con el A2",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "El A2 en dos líneas",
+              "explanation": "Con el **A2** puedes conducir motos de hasta **35 kW** (unos 47 CV) con una relación potencia/peso de hasta **0,2 kW/kg**.\n\nUna moto más potente vale si está **limitada** a 35 kW, siempre que la versión original no pase de **70 kW** (el doble). La limitación tiene que constar en la ficha técnica."
+            },
+            {
+              "ref": "potencia",
+              "kind": "choice",
+              "prompt": "¿Cuál es la potencia máxima de una moto que puedes llevar con el A2?",
+              "data": {
+                "options": ["11 kW", "35 kW", "70 kW", "Sin límite"],
+                "correct": [1],
+                "option_feedback": ["Ese es el límite del A1 (motos de 125).", "", "70 kW es lo máximo que puede tener la moto *original* si se limita a 35 kW.", "Sin límite es el permiso A."]
+              },
+              "explanation": "El A2 llega a 35 kW y 0,2 kW/kg.",
+              "source": "RD 818/2009 (Reglamento General de Conductores) · clases de permiso",
+              "concepts": ["permiso"]
+            },
+            {
+              "ref": "limitada",
+              "kind": "truefalse",
+              "prompt": "Una moto de 95 kW limitada a 35 kW se puede conducir con el A2.",
+              "data": {"answer": false},
+              "explanation": "Para limitarla, la moto original no puede pasar de 70 kW (el doble de 35). Una de 95 kW no vale aunque se limite.",
+              "source": "RD 818/2009 · clases de permiso",
+              "concepts": ["permiso"]
+            },
+            {
+              "ref": "relacion",
+              "kind": "choice",
+              "prompt": "Además de la potencia, el A2 limita la relación potencia/peso a ___.",
+              "data": {"options": ["0,1 kW/kg", "0,2 kW/kg", "0,5 kW/kg"], "correct": [1]},
+              "explanation": "0,2 kW/kg. El A1 se queda en 0,1 kW/kg.",
+              "source": "RD 818/2009 · clases de permiso",
+              "concepts": ["permiso"]
+            },
+            {
+              "ref": "edad",
+              "kind": "choice",
+              "prompt": "¿Qué edad mínima pide el A2?",
+              "data": {"options": ["16 años", "18 años", "20 años", "21 años"], "correct": [1]},
+              "explanation": "18 años. El A1 se puede sacar con 16 y el A, con 20 (y dos años de A2).",
+              "source": "RD 818/2009 · edad mínima",
+              "concepts": ["permiso"]
+            },
+            {
+              "ref": "ficha",
+              "kind": "truefalse",
+              "prompt": "Si limitas una moto para el A2, basta con llevar el certificado del taller en la mochila: no hace falta que conste en la ficha técnica.",
+              "data": {"answer": false},
+              "explanation": "La limitación tiene que estar reflejada en la documentación del vehículo (ficha técnica). Sin eso, a efectos legales la moto tiene su potencia original.",
+              "source": "RD 818/2009 · clases de permiso",
+              "concepts": ["permiso"]
+            }
+          ]
+        },
+        {
+          "ref": "del-b-al-a",
+          "title": "Del B al A2, y del A2 al A",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Lo que te ahorras por tener el B",
+              "explanation": "Con el B ya aprobaste el **teórico común**: para el A2 no lo repites. Te quedan:\n\n1. El **teórico específico** de moto.\n2. La **prueba de pista** (maniobras en circuito cerrado).\n3. La **prueba en circulación** (por vías abiertas).\n\nAntes, el certificado médico de un centro de reconocimiento.\n\nY otra cosa: con **más de 3 años de B** ya puedes llevar motos de **125** (clase A1) en España, sin examen. Fuera de España no vale."
+            },
+            {
+              "ref": "comun",
+              "kind": "truefalse",
+              "prompt": "Si ya tienes el B, para el A2 tienes que volver a aprobar el teórico común.",
+              "data": {"answer": false},
+              "explanation": "El teórico común ya lo aprobaste con el B. Solo haces el específico de moto.",
+              "source": "RD 818/2009 · pruebas de aptitud",
+              "concepts": ["permiso"]
+            },
+            {
+              "ref": "orden",
+              "kind": "order",
+              "prompt": "Ordena los pasos para sacarte el A2 teniendo el B.",
+              "data": {"items": ["Certificado médico", "Teórico específico de moto", "Prueba de pista", "Prueba en circulación"]},
+              "explanation": "El médico primero; después el teórico específico, y con él aprobado, las dos prácticas: pista y circulación.",
+              "source": "RD 818/2009 · pruebas de aptitud",
+              "concepts": ["permiso"]
+            },
+            {
+              "ref": "b-125",
+              "kind": "choice",
+              "prompt": "Tienes el B desde hace 4 años. ¿Qué moto puedes llevar en España sin sacarte otro permiso?",
+              "data": {
+                "options": ["Ninguna", "Una de 125 cm³ y hasta 11 kW", "Una de 35 kW", "Cualquiera si es automática"],
+                "correct": [1],
+                "option_feedback": ["Con más de 3 años de B sí puedes llevar las de la clase A1.", "", "Esa ya es del A2.", "El cambio automático no cambia la clase de permiso."]
+              },
+              "explanation": "Con más de 3 años de B puedes conducir en España motos de la clase A1 (hasta 125 cm³, 11 kW y 0,1 kW/kg).",
+              "source": "RD 818/2009 · autorizaciones del permiso B",
+              "concepts": ["permiso"]
+            },
+            {
+              "ref": "b-125-fuera",
+              "kind": "truefalse",
+              "prompt": "Esa autorización para llevar una 125 con el B también vale cuando cruzas a Francia.",
+              "data": {"answer": false},
+              "explanation": "Solo vale en territorio español. Para conducirla en otro país necesitas el A1 (o superior).",
+              "source": "RD 818/2009 · autorizaciones del permiso B",
+              "concepts": ["permiso"]
+            },
+            {
+              "ref": "a2-a",
+              "kind": "choice",
+              "prompt": "¿Qué necesitas para pasar del A2 al A?",
+              "data": {
+                "options": ["Repetir los tres exámenes", "Dos años con el A2 y un curso de formación en autoescuela", "Solo cumplir 24 años", "Un año con el A2 y la prueba de pista"],
+                "correct": [1]
+              },
+              "explanation": "Tras dos años de A2 se pasa al A con un curso práctico en autoescuela, sin examen.",
+              "source": "RD 818/2009 · acceso progresivo al permiso A",
+              "concepts": ["permiso"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "equipamiento",
+      "title": "Equipamiento",
+      "lessons": [
+        {
+          "ref": "casco",
+          "title": "El casco",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Casco: obligatorio y bien puesto",
+              "explanation": "En moto el casco **homologado** es obligatorio para quien conduce y para quien va de pasajero, **en cualquier vía**, también en ciudad.\n\n- **Homologación**: etiqueta ECE 22.05 o 22.06 cosida a la cincha.\n- **Talla**: ajustado, sin que baile al mover la cabeza.\n- **Cierre**: abrochado siempre; un casco suelto sale despedido en el primer golpe.\n- **Tras un golpe fuerte**, cámbialo aunque por fuera parezca intacto: el poliestireno de dentro ya no amortigua."
+            },
+            {
+              "ref": "ciudad",
+              "kind": "truefalse",
+              "prompt": "En vías urbanas, el casco es opcional si vas a menos de 50 km/h.",
+              "data": {"answer": false},
+              "explanation": "En moto el casco es obligatorio en todas las vías, urbanas e interurbanas, a cualquier velocidad.",
+              "source": "RD 1428/2003 (Reglamento General de Circulación) art. 118",
+              "concepts": ["casco"]
+            },
+            {
+              "ref": "quien",
+              "kind": "choice",
+              "prompt": "¿Quién tiene que llevar casco homologado en una moto?",
+              "data": {"options": ["Solo quien conduce", "Quien conduce y el pasajero", "Solo en autopista, los dos"], "correct": [1]},
+              "explanation": "Conductor y pasajero, en cualquier vía.",
+              "source": "RD 1428/2003 art. 118",
+              "concepts": ["casco"]
+            },
+            {
+              "ref": "golpe",
+              "kind": "choice",
+              "prompt": "Se te cae el casco al suelo desde la moto y se ve un arañazo en la pintura. ¿Qué haces?",
+              "data": {
+                "options": ["Nada: si la carcasa no se ha roto, protege igual", "Lo revisa un especialista o lo cambio: el interior puede haber quedado comprimido", "Le doy una capa de pintura"],
+                "correct": [1]
+              },
+              "explanation": "La protección la da sobre todo la capa de poliestireno expandido, que se aplasta en un impacto y no recupera su forma. Un golpe serio puede dejarlo inservible sin que se note por fuera.",
+              "source": "Equipamiento del motorista (Garaje)",
+              "concepts": ["casco"]
+            },
+            {
+              "ref": "ajuste",
+              "kind": "choice",
+              "prompt": "¿Cómo debe quedar un casco bien ajustado?",
+              "data": {
+                "options": ["Holgado, para que no apriete en viajes largos", "Firme: al girarlo con la mano arrastra la piel de la cara y no se sale tirando hacia delante", "Da igual mientras esté homologado"],
+                "correct": [1]
+              },
+              "explanation": "Un casco grande se mueve y puede salirse en una caída. Debe ajustar firme, con la cincha abrochada (un dedo de holgura bajo la barbilla).",
+              "source": "Equipamiento del motorista (Garaje)",
+              "concepts": ["casco"]
+            }
+          ]
+        },
+        {
+          "ref": "ropa",
+          "title": "Ropa, protecciones y ser visto",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Vestirse para caerse",
+              "explanation": "En moto tu carrocería es tu ropa. Lo básico, también en verano y en trayectos cortos:\n\n- **Guantes** de moto: en una caída, lo primero que pones son las manos.\n- **Chaqueta y pantalón** con protecciones homologadas (hombros, codos, espalda, rodillas, cadera).\n- **Botas** que cubran el tobillo.\n- Colores vivos o elementos **reflectantes**: ayudan a que te vean, sobre todo de noche."
+            },
+            {
+              "ref": "manos",
+              "kind": "truefalse",
+              "prompt": "En verano, para trayectos cortos por ciudad, ir en manga corta y sin guantes no aumenta el riesgo de lesiones.",
+              "data": {"answer": false},
+              "explanation": "La mayoría de accidentes de moto ocurren en ciudad y a poca velocidad, y aun así el asfalto abrasa la piel en segundos. Las manos son lo primero que tocan el suelo.",
+              "source": "Equipamiento del motorista (Garaje)",
+              "concepts": ["equipamiento"]
+            },
+            {
+              "ref": "match",
+              "kind": "match",
+              "prompt": "Empareja cada prenda con lo que protege.",
+              "data": {
+                "pairs": [
+                  ["Guantes", "Manos y muñecas, lo primero que apoyas al caer"],
+                  ["Espaldera", "Columna vertebral"],
+                  ["Botas de caña alta", "Tobillos y pies"],
+                  ["Chaleco reflectante", "Que te vean de noche"]
+                ]
+              },
+              "explanation": "Cada elemento cubre un punto débil distinto; ninguno sustituye a los demás.",
+              "source": "Equipamiento del motorista (Garaje)",
+              "concepts": ["equipamiento"]
+            },
+            {
+              "ref": "colores",
+              "kind": "choice",
+              "prompt": "¿Por qué conviene llevar ropa de colores vivos o con reflectantes?",
+              "data": {"options": ["Porque lo exige la ITV", "Porque la moto es pequeña y a los demás les cuesta verla", "Para que el casco combine"], "correct": [1]},
+              "explanation": "Muchos accidentes de moto empiezan con un «no la vi». Todo lo que te haga más visible cuenta.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["visibilidad"]
+            },
+            {
+              "ref": "frio",
+              "kind": "choice",
+              "prompt": "En un viaje largo con frío, ¿qué le pasa a quien conduce mal abrigado?",
+              "data": {
+                "options": ["Nada: el frío mantiene despierto", "Pierde sensibilidad en las manos y reflejos, y se fatiga antes", "Consume menos combustible"],
+                "correct": [1]
+              },
+              "explanation": "El frío entumece las manos (frenas y embragas peor), ralentiza los reflejos y cansa. Con viento, la sensación térmica baja mucho más.",
+              "source": "Factores humanos en la conducción (Garaje)",
+              "concepts": ["factor humano", "equipamiento"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "la-moto",
+      "title": "La moto: mandos y mantenimiento",
+      "lessons": [
+        {
+          "ref": "mandos",
+          "title": "Mandos y controles",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Dónde está cada cosa",
+              "explanation": "En casi todas las motos con marchas:\n\n- **Maneta derecha**: freno delantero. **Puño derecho**: gas.\n- **Pedal derecho**: freno trasero.\n- **Maneta izquierda**: embrague.\n- **Pedal izquierdo**: cambio. Normalmente la primera va **abajo**, el punto muerto entre primera y segunda, y el resto **hacia arriba**.\n- **Interruptor de paro** (rojo, en la piña derecha): corta el motor sin quitar la llave."
+            },
+            {
+              "ref": "match",
+              "kind": "match",
+              "prompt": "Empareja cada mando con lo que hace.",
+              "data": {
+                "pairs": [
+                  ["Maneta derecha", "Freno delantero"],
+                  ["Pedal derecho", "Freno trasero"],
+                  ["Maneta izquierda", "Embrague"],
+                  ["Pedal izquierdo", "Cambio de marchas"]
+                ]
+              },
+              "explanation": "Es la disposición estándar. Antes de salir con una moto que no conoces, compruébalo.",
+              "source": "La moto: mandos (Garaje)",
+              "concepts": ["mandos"]
+            },
+            {
+              "ref": "neutro",
+              "kind": "choice",
+              "prompt": "En el cambio típico «1 abajo, resto arriba», ¿dónde está el punto muerto?",
+              "data": {"options": ["Debajo de la primera", "Entre primera y segunda", "Encima de la sexta"], "correct": [1]},
+              "explanation": "Entre primera y segunda, con medio golpe de pedal. El testigo verde «N» del cuadro lo confirma.",
+              "source": "La moto: mandos (Garaje)",
+              "concepts": ["mandos"]
+            },
+            {
+              "ref": "paro",
+              "kind": "choice",
+              "prompt": "¿Para qué sirve el interruptor rojo de paro del motor?",
+              "data": {
+                "options": ["Para encender las luces de emergencia", "Para cortar el motor rápido sin soltar el manillar, por ejemplo tras una caída", "Para activar el ABS"],
+                "correct": [1]
+              },
+              "explanation": "Corta el encendido al momento. Si la moto se cae con el motor en marcha, es lo primero.",
+              "source": "La moto: mandos (Garaje)",
+              "concepts": ["mandos"]
+            },
+            {
+              "ref": "pata",
+              "kind": "truefalse",
+              "prompt": "En la mayoría de motos, si metes una marcha con la pata de cabra bajada, el motor se para: es un sistema de seguridad.",
+              "data": {"answer": true},
+              "explanation": "El corte por pata lateral evita salir con ella bajada, que en la primera curva a la izquierda tocaría el suelo y te tiraría.",
+              "source": "La moto: mandos (Garaje)",
+              "concepts": ["mandos"]
+            }
+          ]
+        },
+        {
+          "ref": "mantenimiento",
+          "title": "Mantenimiento que te toca a ti",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Lo que más se descuida",
+              "explanation": "- **Cadena**: se engrasa cada 500–1.000 km y tras lluvia o lavado. La holgura se mide a mitad del tramo inferior y debe ser la del manual (suele ser 20–35 mm). Piñón, corona y cadena se cambian juntos.\n- **Neumáticos**: presión **en frío**, cada dos semanas; delante y detrás llevan presiones distintas. Profundidad mínima legal: **1,6 mm**.\n- **Frenos**: pastillas con material y líquido por encima del mínimo; el líquido se cambia por tiempo (absorbe humedad).\n\nEn Garaje, cuando creas una moto, estas tareas ya vienen en su plan de mantenimiento."
+            },
+            {
+              "ref": "cadena-tensa",
+              "kind": "choice",
+              "prompt": "¿Qué pasa si llevas la cadena demasiado tensa?",
+              "data": {
+                "options": ["Nada, cuanto más tensa mejor", "Fuerza los rodamientos del eje y de la salida del cambio y la cadena se desgasta antes", "La moto gasta menos"],
+                "correct": [1],
+                "option_feedback": ["Al comprimirse la suspensión, la cadena se tensa aún más: necesita holgura.", "", "No tiene nada que ver con el consumo."]
+              },
+              "explanation": "La distancia entre piñón y corona cambia al moverse el basculante. Sin holgura, la cadena tira de todo y puede llegar a romperse.",
+              "source": "Mantenimiento de la moto (Garaje)",
+              "concepts": ["cadena", "mantenimiento"]
+            },
+            {
+              "ref": "cadena-floja",
+              "kind": "truefalse",
+              "prompt": "Una cadena muy floja puede salirse del piñón o la corona y bloquear la rueda trasera.",
+              "data": {"answer": true},
+              "explanation": "Por eso se revisa a menudo: una cadena que se sale puede bloquear la rueda o romper el cárter.",
+              "source": "Mantenimiento de la moto (Garaje)",
+              "concepts": ["cadena", "mantenimiento"]
+            },
+            {
+              "ref": "presion",
+              "kind": "choice",
+              "prompt": "¿Cuándo hay que medir la presión de los neumáticos?",
+              "data": {"options": ["En frío, antes de rodar", "Justo después de un viaje, en caliente", "Da igual"], "correct": [0]},
+              "explanation": "En caliente la presión sube y daría una lectura falsa. Las presiones del manual son en frío.",
+              "source": "Mantenimiento de la moto (Garaje)",
+              "concepts": ["neumáticos", "mantenimiento"]
+            },
+            {
+              "ref": "profundidad",
+              "kind": "choice",
+              "prompt": "¿Cuál es la profundidad mínima legal del dibujo de los neumáticos de una moto?",
+              "data": {"options": ["1 mm", "1,6 mm", "3 mm", "No hay mínimo"], "correct": [1]},
+              "explanation": "1,6 mm, como en los coches (en ciclomotores es 1 mm). Con lluvia, conviene bastante más.",
+              "source": "RD 2822/1998 (Reglamento General de Vehículos) · neumáticos",
+              "concepts": ["neumáticos", "mantenimiento"]
+            },
+            {
+              "ref": "nuevos",
+              "kind": "truefalse",
+              "prompt": "Unos neumáticos recién montados agarran al máximo desde el primer metro.",
+              "data": {"answer": false},
+              "explanation": "Salen con restos del molde que los hacen resbaladizos. Los primeros kilómetros, con suavidad y sin tumbar mucho.",
+              "source": "Mantenimiento de la moto (Garaje)",
+              "concepts": ["neumáticos"]
+            },
+            {
+              "ref": "liquido",
+              "kind": "choice",
+              "prompt": "¿Por qué el líquido de frenos se cambia cada cierto tiempo aunque no hayas hecho muchos km?",
+              "data": {
+                "options": ["Porque se evapora", "Porque absorbe humedad, y con agua hierve antes y el freno pierde eficacia al calentarse", "Por estética"],
+                "correct": [1]
+              },
+              "explanation": "Es higroscópico. Con humedad hierve a menos temperatura y en una bajada larga el freno puede «irse».",
+              "source": "Mantenimiento de la moto (Garaje)",
+              "concepts": ["mantenimiento", "frenada"]
+            }
+          ]
+        },
+        {
+          "ref": "antes-de-salir",
+          "title": "Revisión antes de salir",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Dos minutos antes de arrancar",
+              "explanation": "Una vuelta a la moto antes de salir, siempre en el mismo orden:\n\n1. **Neumáticos**: presión y estado.\n2. **Mandos**: el gas vuelve solo; frenos firmes; embrague con su holgura.\n3. **Luces**: cruce, intermitentes, freno (con maneta y con pedal) y claxon.\n4. **Niveles**: aceite y sin fugas.\n5. **Chasis**: cadena, retrovisores.\n6. **Caballete**: la pata recoge sola.\n\nLa tienes como revisión «Antes de salir (moto)» en Mecánica."
+            },
+            {
+              "ref": "gas",
+              "kind": "choice",
+              "prompt": "Al girar el manillar a tope, el motor se acelera solo. ¿Qué significa?",
+              "data": {
+                "options": ["Que el ralentí está bien ajustado", "Que el cable del gas está mal guiado o tenso: hay que arreglarlo antes de salir", "Nada importante"],
+                "correct": [1]
+              },
+              "explanation": "En una curva cerrada o una maniobra, la moto aceleraría sola. El gas siempre debe volver a ralentí, con el manillar en cualquier posición.",
+              "source": "Revisión antes de salir (Garaje)",
+              "concepts": ["mandos", "mantenimiento"]
+            },
+            {
+              "ref": "freno-luz",
+              "kind": "truefalse",
+              "prompt": "Basta con comprobar que la luz de freno se enciende con la maneta: si va con la maneta, va con el pedal.",
+              "data": {"answer": false},
+              "explanation": "Cada mando tiene su propio interruptor. Hay que probar los dos por separado.",
+              "source": "Revisión antes de salir (Garaje)",
+              "concepts": ["luces", "mantenimiento"]
+            },
+            {
+              "ref": "orden",
+              "kind": "order",
+              "prompt": "Ordena una revisión rápida antes de salir (de abajo arriba, rodeando la moto).",
+              "data": {"items": ["Neumáticos", "Mandos", "Luces", "Niveles", "Chasis y cadena", "Pata de cabra"]},
+              "explanation": "Seguir siempre el mismo orden hace que no se te olvide nada. Este es uno habitual.",
+              "source": "Revisión antes de salir (Garaje)",
+              "concepts": ["mantenimiento"]
+            },
+            {
+              "ref": "itv",
+              "kind": "choice",
+              "prompt": "¿Cuándo pasa una moto su primera ITV?",
+              "data": {"options": ["Al año", "A los 4 años, y después cada 2", "A los 10 años"], "correct": [1]},
+              "explanation": "Las motos están exentas los 4 primeros años; después, ITV cada dos años. Apúntala en Documentos para que Garaje te avise.",
+              "source": "RD 920/2017 (inspección técnica de vehículos) · frecuencias",
+              "concepts": ["mantenimiento"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "tecnica",
+      "title": "Técnica de conducción",
+      "lessons": [
+        {
+          "ref": "postura",
+          "title": "Postura y mirada",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "La moto va donde miras",
+              "explanation": "- **Mirada lejos** y hacia donde quieres ir, no al obstáculo: si miras el bache, acabas en el bache.\n- **Brazos sueltos**, codos ligeramente flexionados: con los brazos rígidos transmites cada tirón al manillar y la moto se mueve sola.\n- **Rodillas** contra el depósito y **pies** en las estriberas, con la punta hacia delante.\n- La moto se **sujeta con las piernas**, no con el manillar."
+            },
+            {
+              "ref": "mirada",
+              "kind": "choice",
+              "prompt": "En una curva aparece una mancha de gravilla. ¿Adónde miras?",
+              "data": {
+                "options": ["A la gravilla, para no perderla de vista", "Hacia la trayectoria que quieres seguir para esquivarla", "Al cuadro de instrumentos"],
+                "correct": [1],
+                "option_feedback": ["Fijar la vista en el obstáculo hace que la moto vaya hacia él.", "", "Bajar la vista te quita información justo cuando más la necesitas."]
+              },
+              "explanation": "La moto tiende a ir hacia donde miras. Localiza el obstáculo y lleva la vista a la salida.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["postura"]
+            },
+            {
+              "ref": "brazos",
+              "kind": "truefalse",
+              "prompt": "Llevar los brazos rígidos y bien agarrados al manillar da más estabilidad a la moto.",
+              "data": {"answer": false},
+              "explanation": "Al revés: los brazos rígidos transmiten tus movimientos al manillar y la moto pierde estabilidad. Agarra firme pero relajado.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["postura"]
+            },
+            {
+              "ref": "rodillas",
+              "kind": "choice",
+              "prompt": "¿Para qué sirve apretar las rodillas contra el depósito?",
+              "data": {"options": ["Para no cansarse", "Para formar un bloque con la moto y no cargar el peso en el manillar al frenar", "Para calentarse"], "correct": [1]},
+              "explanation": "Al frenar, el cuerpo se va hacia delante. Si te sujetas con las piernas, los brazos quedan libres para dirigir.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["postura", "frenada"]
+            }
+          ]
+        },
+        {
+          "ref": "frenada",
+          "title": "Frenar bien",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Los dos frenos, en recta",
+              "explanation": "Al frenar, el peso pasa a la rueda delantera: por eso el **freno delantero** hace la mayor parte del trabajo en seco. El trasero ayuda y estabiliza.\n\n- Usa **los dos a la vez**, apretando de forma progresiva (no de golpe).\n- Frena con la moto **recta**. Inclinada, el neumático ya está usando agarre para girar.\n- Con **ABS**, aprieta fuerte y mantén: él evita el bloqueo. Las motos nuevas de más de 125 cm³ lo llevan de serie.\n- Sobre mojado o tierra, más suave y con más distancia."
+            },
+            {
+              "ref": "reparto",
+              "kind": "choice",
+              "prompt": "En una frenada fuerte sobre asfalto seco, ¿qué freno detiene más la moto?",
+              "data": {"options": ["El trasero", "El delantero", "Los dos por igual"], "correct": [1]},
+              "explanation": "Al frenar el peso se carga delante, y la rueda delantera puede transmitir mucha más fuerza. Aun así se usan los dos.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["frenada"]
+            },
+            {
+              "ref": "curva",
+              "kind": "choice",
+              "prompt": "Entras demasiado rápido en una curva y necesitas frenar. ¿Qué es lo más seguro?",
+              "data": {
+                "options": ["Clavar el delantero con la moto tumbada", "Si hay espacio, enderezar la moto y frenar en recta; si no, frenar con mucha suavidad sin cambiar la inclinación de golpe", "Soltar el manillar"],
+                "correct": [1]
+              },
+              "explanation": "Inclinado, el neumático tiene menos agarre disponible para frenar. Un frenazo fuerte tumbado acaba en caída. Lo ideal: frenar antes de la curva.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["frenada", "curvas"]
+            },
+            {
+              "ref": "abs",
+              "kind": "truefalse",
+              "prompt": "Con ABS, en una emergencia hay que bombear el freno, como se hacía antes.",
+              "data": {"answer": false},
+              "explanation": "Con ABS se aprieta fuerte y se mantiene: el sistema evita que la rueda se bloquee. Bombear solo alarga la frenada.",
+              "source": "Reglamento (UE) 168/2013 · sistemas de frenado",
+              "concepts": ["frenada"]
+            },
+            {
+              "ref": "bloqueo",
+              "kind": "choice",
+              "prompt": "Sin ABS, se te bloquea la rueda trasera en una frenada en recta. ¿Qué haces?",
+              "data": {
+                "options": ["Soltar el freno trasero de golpe aunque la moto vaya cruzada", "Si la moto sigue recta, mantener el freno hasta parar; soltarlo con la moto cruzada puede lanzarte", "Acelerar"],
+                "correct": [1]
+              },
+              "explanation": "Si la trasera derrapa pero la moto sigue alineada, mantenerla bloqueada hasta parar suele ser más seguro que soltarla cruzada: al recuperar agarre de golpe puede provocar un latigazo.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["frenada"]
+            },
+            {
+              "ref": "progresivo",
+              "kind": "truefalse",
+              "prompt": "La primera fase de la frenada debe ser suave para que la horquilla se comprima y la rueda delantera cargue peso; después se aprieta más.",
+              "data": {"answer": true},
+              "explanation": "Una frenada progresiva aprovecha mejor el agarre. Un golpe seco de maneta puede bloquear la rueda antes de que cargue.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["frenada"]
+            }
+          ]
+        },
+        {
+          "ref": "curvas",
+          "title": "Curvas y contramanillar",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Cómo gira de verdad una moto",
+              "explanation": "Por encima de paso de persona, la moto no gira por girar el manillar, sino por **inclinarse**. Y para inclinarla se usa el **contramanillar**: empujar el puño del lado al que quieres ir.\n\n- **Empujar el puño derecho** hacia delante → la moto se inclina y gira a la **derecha**.\n- Antes de la curva: **frena y elige la marcha**. En la curva: gas constante o abriendo suave.\n- Trazada de seguridad: abierto al entrar para ver la salida, y sin invadir nunca el carril contrario."
+            },
+            {
+              "ref": "contra",
+              "kind": "choice",
+              "prompt": "Vas a 60 km/h y quieres girar a la izquierda. ¿Qué haces con el manillar?",
+              "data": {
+                "options": ["Empujar el puño izquierdo hacia delante", "Tirar del puño izquierdo hacia ti", "Nada, solo mover el cuerpo"],
+                "correct": [0],
+                "option_feedback": ["", "Así la moto se inclinaría hacia la derecha.", "El cuerpo ayuda, pero quien inclina la moto es el contramanillar."]
+              },
+              "explanation": "Empujar el puño izquierdo hace que la rueda gire un instante a la derecha y la moto se incline a la izquierda.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["curvas"]
+            },
+            {
+              "ref": "orden",
+              "kind": "order",
+              "prompt": "Ordena cómo se toma una curva.",
+              "data": {"items": ["Mirar la curva y calcular", "Frenar en recta y reducir marcha", "Inclinar con el contramanillar", "Mantener gas constante con la vista en la salida", "Abrir gas al enderezar"]},
+              "explanation": "Todo lo que cambia la velocidad se hace antes de inclinar. En la curva, suavidad.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["curvas"]
+            },
+            {
+              "ref": "gas-curva",
+              "kind": "truefalse",
+              "prompt": "A mitad de curva, cerrar el gas de golpe ayuda a que la moto gire más.",
+              "data": {"answer": false},
+              "explanation": "Un cierre brusco carga de golpe la rueda delantera y desestabiliza la moto. Gas constante o abriendo suave.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["curvas"]
+            },
+            {
+              "ref": "invadir",
+              "kind": "choice",
+              "prompt": "En una curva a izquierdas en carretera, ¿hasta dónde puedes acercarte a la línea central?",
+              "data": {
+                "options": ["Puedo pisarla para trazar mejor", "Sin que ninguna parte de mi cuerpo ni de la moto invada el carril contrario", "Hasta la mitad del carril contrario si no viene nadie"],
+                "correct": [1]
+              },
+              "explanation": "Al inclinarte, la cabeza y los hombros sobresalen de la moto. Si pegas las ruedas a la línea, tu cuerpo ya está en el carril contrario.",
+              "source": "RD 1428/2003 · circulación por la derecha y en curvas",
+              "concepts": ["curvas", "posición"]
+            }
+          ]
+        },
+        {
+          "ref": "baja-velocidad",
+          "title": "Baja velocidad y maniobras",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Despacio también se aprende",
+              "explanation": "Las maniobras lentas (las de la prueba de pista y las de cada día en un atasco) se controlan con:\n\n- **Embrague** en el punto de fricción, regulando la tracción.\n- **Gas constante**, un poco por encima del ralentí.\n- **Freno trasero** suave para controlar la velocidad.\n- **Mirada lejos**, hacia la salida del giro, no al suelo.\n\nEn giros muy cerrados y lentos, evita el freno delantero: con el manillar girado, la moto se cae hacia dentro."
+            },
+            {
+              "ref": "freno-lento",
+              "kind": "choice",
+              "prompt": "En un giro cerrado a paso de persona, ¿qué freno usas para regular la velocidad?",
+              "data": {
+                "options": ["El delantero", "El trasero, con suavidad", "Ninguno: apago el motor"],
+                "correct": [1],
+                "option_feedback": ["Con el manillar girado, el delantero hace que la moto se cierre y caiga.", "", ""]
+              },
+              "explanation": "El trasero frena sin cerrar la dirección. Junto con el embrague y el gas, da un control muy fino.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["baja velocidad"]
+            },
+            {
+              "ref": "mirar-suelo",
+              "kind": "truefalse",
+              "prompt": "En las maniobras lentas conviene mirar justo delante de la rueda para no salirse de las marcas.",
+              "data": {"answer": false},
+              "explanation": "Mirar al suelo hace perder el equilibrio. Se mira hacia donde se va a salir de la maniobra.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["baja velocidad", "postura"]
+            },
+            {
+              "ref": "levantar",
+              "kind": "choice",
+              "prompt": "Se te cae la moto parada. ¿Cómo la levantas sin hacerte daño?",
+              "data": {
+                "options": ["De frente, tirando con los brazos", "De espaldas a la moto, agarrando manillar y una parte firme del chasis, y empujando con las piernas", "Por el retrovisor"],
+                "correct": [1]
+              },
+              "explanation": "Con la espalda recta y la fuerza en las piernas. Antes, mete una marcha para que no ruede y apaga el motor.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["baja velocidad"]
+            },
+            {
+              "ref": "embrague",
+              "kind": "choice",
+              "prompt": "En un atasco, avanzando a paso de persona, ¿cómo controlas mejor la moto?",
+              "data": {
+                "options": ["Embrague en el punto de fricción y gas constante", "Embrague suelto del todo en primera", "A golpes de gas"],
+                "correct": [0]
+              },
+              "explanation": "El embrague dosifica cuánta fuerza llega a la rueda. Con gas constante, la moto avanza suave y estable.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["baja velocidad"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "normas",
+      "title": "Normas propias de la moto",
+      "lessons": [
+        {
+          "ref": "luces-pasajero",
+          "title": "Luces, pasajero y carga",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Lo que cambia respecto al coche",
+              "explanation": "- **Luz de cruce encendida también de día**, en cualquier vía.\n- **Pasajero**: solo si la moto está autorizada para llevarlo (consta en su documentación). Va **detrás**, sentado **a horcajadas**, con los pies en los **reposapiés** y con casco.\n- **Menores**: como pasajeros, a partir de **12 años**. Excepcionalmente desde los **7**, si conduce su padre, madre, tutor o un adulto autorizado por ellos, con casco homologado.\n- La carga no puede comprometer la estabilidad ni tapar luces o matrícula."
+            },
+            {
+              "ref": "cruce",
+              "kind": "truefalse",
+              "prompt": "Con buena luz de día, la moto puede circular con las luces apagadas.",
+              "data": {"answer": false},
+              "explanation": "Las motos deben llevar encendido el alumbrado de cruce durante el día, en cualquier vía. Es para que te vean.",
+              "source": "RD 1428/2003 art. 104",
+              "concepts": ["luces"]
+            },
+            {
+              "ref": "edad",
+              "kind": "choice",
+              "prompt": "¿A partir de qué edad puede ir un menor de pasajero en moto, como norma general?",
+              "data": {"options": ["7 años", "12 años", "16 años"], "correct": [1]},
+              "explanation": "12 años. Desde los 7 solo de forma excepcional: si conduce su padre, madre, tutor o un adulto autorizado por ellos, y con casco homologado.",
+              "source": "RD 1428/2003 art. 12",
+              "concepts": ["pasajero"]
+            },
+            {
+              "ref": "posicion",
+              "kind": "choice",
+              "prompt": "¿Cómo tiene que ir sentado el pasajero?",
+              "data": {
+                "options": ["Detrás, a horcajadas y con los pies en los reposapiés", "De lado, si lleva falda", "Delante del conductor si es pequeño"],
+                "correct": [0]
+              },
+              "explanation": "Detrás del conductor, a horcajadas, pies en los reposapiés laterales y nunca entre el conductor y el manillar.",
+              "source": "RD 1428/2003 art. 12",
+              "concepts": ["pasajero"]
+            },
+            {
+              "ref": "autorizada",
+              "kind": "truefalse",
+              "prompt": "Cualquier moto con un asiento lo bastante largo puede llevar pasajero.",
+              "data": {"answer": false},
+              "explanation": "Solo si está autorizada para ello en su documentación, y con su asiento y reposapiés.",
+              "source": "RD 1428/2003 art. 12",
+              "concepts": ["pasajero"]
+            },
+            {
+              "ref": "pasajero-curva",
+              "kind": "choice",
+              "prompt": "¿Qué debe hacer el pasajero en las curvas?",
+              "data": {
+                "options": ["Inclinarse hacia fuera para compensar", "Acompañar la inclinación de quien conduce, mirando por encima de su hombro hacia dentro de la curva", "Bajar un pie"],
+                "correct": [1]
+              },
+              "explanation": "Un pasajero que se resiste o compensa al revés desequilibra la moto. Debe ir como un bulto bien sujeto, acompañando.",
+              "source": "Técnica de conducción en moto (Garaje)",
+              "concepts": ["pasajero", "curvas"]
+            }
+          ]
+        },
+        {
+          "ref": "velocidad-posicion",
+          "title": "Velocidad y posición en la vía",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Mismos límites, otra forma de ocupar el carril",
+              "explanation": "Las motos tienen los **mismos límites genéricos** que los turismos: **120** en autopista y autovía, **90** en carretera convencional y, en ciudad, **50**, **30** o **20** según la vía.\n\nDentro del carril, la moto busca el sitio donde **ve y es vista**: normalmente el tercio izquierdo del carril en recta, separándote del arcén y de los coches aparcados. Y nunca en el ángulo muerto de otro vehículo."
+            },
+            {
+              "ref": "match",
+              "kind": "match",
+              "prompt": "Empareja cada vía con el límite genérico para una moto.",
+              "data": {
+                "pairs": [
+                  ["Autopista o autovía", "120 km/h"],
+                  ["Carretera convencional", "90 km/h"],
+                  ["Ciudad, dos o más carriles por sentido", "50 km/h"],
+                  ["Ciudad, un carril por sentido", "30 km/h"]
+                ]
+              },
+              "explanation": "Son los genéricos; la señalización concreta manda. En calles de plataforma única, 20 km/h.",
+              "source": "RD 1428/2003 arts. 48 y 50",
+              "concepts": ["velocidad"]
+            },
+            {
+              "ref": "angulo",
+              "kind": "choice",
+              "prompt": "Circulas detrás de un camión en una autovía. ¿Dónde te colocas?",
+              "data": {
+                "options": ["Pegado a su parte trasera para aprovechar el rebufo", "A buena distancia y donde veas sus retrovisores: si tú no los ves, él no te ve", "Junto a su rueda trasera derecha"],
+                "correct": [1]
+              },
+              "explanation": "Un camión tiene ángulos muertos enormes, sobre todo a la derecha y detrás. Si no ves su cara en el espejo, no existes para él.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["posición", "visibilidad"]
+            },
+            {
+              "ref": "distancia",
+              "kind": "choice",
+              "prompt": "¿Qué distancia de seguridad conviene dejar en seco con el vehículo de delante?",
+              "data": {"options": ["Medio segundo", "Al menos dos segundos (más con lluvia)", "La longitud de la moto"], "correct": [1]},
+              "explanation": "Cuenta dos segundos desde que el de delante pasa una referencia hasta que la pasas tú. Con el asfalto mojado, el doble.",
+              "source": "RD 1428/2003 art. 54 · distancia entre vehículos",
+              "concepts": ["posición"]
+            },
+            {
+              "ref": "aparcados",
+              "kind": "truefalse",
+              "prompt": "En ciudad, ir pegado a los coches aparcados es lo más seguro porque dejas sitio al resto.",
+              "data": {"answer": false},
+              "explanation": "Una puerta que se abre o un peatón que sale entre coches no te dan margen. Deja espacio lateral.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["posición"]
+            },
+            {
+              "ref": "grupo",
+              "kind": "choice",
+              "prompt": "Vais varias motos por carretera. ¿Cómo os colocáis?",
+              "data": {
+                "options": ["En paralelo, de dos en dos, para ir juntos", "En fila escalonada: una a la izquierda del carril y la siguiente a la derecha, con distancia", "Todas en fila pegadas"],
+                "correct": [1]
+              },
+              "explanation": "Escalonadas, cada moto tiene su espacio para frenar y esquivar, y el grupo ocupa menos longitud.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["posición"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "riesgos",
+      "title": "Riesgos y conducción preventiva",
+      "lessons": [
+        {
+          "ref": "firme-tiempo",
+          "title": "El firme y el tiempo",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Lo que un coche ni nota, a una moto la tira",
+              "explanation": "Con dos huellas de neumático del tamaño de una tarjeta, todo cuenta:\n\n- **Marcas viales** (pasos de cebra, flechas) y **tapas metálicas**: muy resbaladizas mojadas.\n- **Gasoil** en rotondas y gasolineras, **gravilla** en curvas, **hojas** en otoño.\n- **Primeros minutos de lluvia**: el agua levanta la grasa y el polvo del asfalto; es cuando más resbala.\n- **Viento lateral**: brazos sueltos y anticípate al salir de un túnel o al adelantar a un camión."
+            },
+            {
+              "ref": "lluvia",
+              "kind": "choice",
+              "prompt": "¿Cuándo resbala más el asfalto con lluvia?",
+              "data": {"options": ["Tras horas lloviendo", "En los primeros minutos de lluvia", "Igual siempre"], "correct": [1]},
+              "explanation": "La primera lluvia mezcla el agua con el aceite, la goma y el polvo acumulados. Cuando llueve mucho rato, la carretera se «lava».",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["firme", "meteorología"]
+            },
+            {
+              "ref": "cebra",
+              "kind": "truefalse",
+              "prompt": "Con lluvia, frenar encima de un paso de cebra pintado es tan seguro como hacerlo en asfalto.",
+              "data": {"answer": false},
+              "explanation": "La pintura vial agarra mucho menos mojada. Frena antes o después, y pásala con la moto recta y sin tocar gas ni frenos.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["firme"]
+            },
+            {
+              "ref": "match",
+              "kind": "match",
+              "prompt": "Empareja cada peligro con dónde aparece más.",
+              "data": {
+                "pairs": [
+                  ["Gasoil derramado", "Rotondas y entradas a gasolineras"],
+                  ["Gravilla", "Curvas de carreteras secundarias y salidas de caminos"],
+                  ["Hojas mojadas", "Carreteras con árboles en otoño"],
+                  ["Viento lateral fuerte", "Salidas de túneles y viaductos"]
+                ]
+              },
+              "explanation": "Saber dónde suelen estar ayuda a anticiparse y bajar el ritmo antes de llegar.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["firme", "meteorología"]
+            },
+            {
+              "ref": "viento",
+              "kind": "choice",
+              "prompt": "Te sorprende una racha de viento lateral fuerte. ¿Qué haces?",
+              "data": {
+                "options": ["Agarrar el manillar con todas tus fuerzas", "Bajar la velocidad, relajar los brazos y sujetar la moto con las piernas", "Acelerar para pasar antes"],
+                "correct": [1]
+              },
+              "explanation": "Con los brazos rígidos, cada racha se convierte en un golpe de manillar. Más despacio y relajado, la moto se corrige sola.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["meteorología", "postura"]
+            },
+            {
+              "ref": "tapas",
+              "kind": "choice",
+              "prompt": "Ves una tapa de alcantarilla metálica en tu trazada, en plena curva y con el suelo mojado. ¿Qué haces?",
+              "data": {
+                "options": ["La piso frenando para pasar más despacio", "La esquivo si puedo sin maniobras bruscas; si no, la paso lo más recta posible y sin frenar ni acelerar", "Aumento la inclinación sobre ella"],
+                "correct": [1]
+              },
+              "explanation": "Sobre metal mojado casi no hay agarre: cualquier fuerza (frenar, acelerar, inclinar) puede hacerte deslizar.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["firme"]
+            }
+          ]
+        },
+        {
+          "ref": "ser-visto",
+          "title": "Que te vean",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "«No la vi»",
+              "explanation": "Muchos choques entre coche y moto ocurren en **intersecciones**: un coche gira a la izquierda o sale de una calle y no ve la moto, o calcula mal su velocidad (una moto es estrecha y parece más lejos).\n\n- Asume que **no te han visto** hasta que lo confirmes (contacto visual, que el coche se detenga).\n- Lleva las manos **cerca de los frenos** al acercarte a cruces.\n- Evita los ángulos muertos y **no adelantes por la derecha**."
+            },
+            {
+              "ref": "cruce",
+              "kind": "choice",
+              "prompt": "Llegas a un cruce y un coche espera para salir de una calle a tu derecha. ¿Qué es lo más prudente?",
+              "data": {
+                "options": ["Mantener la velocidad: tienes prioridad", "Reducir, preparar los frenos y estar listo por si sale sin verte", "Pitar y acelerar"],
+                "correct": [1]
+              },
+              "explanation": "Tener prioridad no te protege si el otro no te ha visto. Prepárate para frenar o esquivar.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["visibilidad"]
+            },
+            {
+              "ref": "lejos",
+              "kind": "truefalse",
+              "prompt": "Por ser estrecha, una moto que se acerca suele parecer más lejos y más lenta de lo que va.",
+              "data": {"answer": true},
+              "explanation": "Por eso otros conductores calculan mal y se cruzan. Cuenta con ello.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["visibilidad"]
+            },
+            {
+              "ref": "derecha",
+              "kind": "choice",
+              "prompt": "En carretera, el coche de delante va despacio. ¿Por dónde adelantas?",
+              "data": {
+                "options": ["Por la derecha, aprovechando el arcén", "Por la izquierda, cuando sea legal y seguro", "Por donde haya hueco"],
+                "correct": [1]
+              },
+              "explanation": "El adelantamiento se hace por la izquierda, como en coche, con visibilidad, sin pisar línea continua y avisando.",
+              "source": "RD 1428/2003 · adelantamiento",
+              "concepts": ["visibilidad", "posición"]
+            },
+            {
+              "ref": "intermitente",
+              "kind": "choice",
+              "prompt": "Has girado y el intermitente de tu moto sigue encendido. ¿Por qué es peligroso?",
+              "data": {
+                "options": ["No lo es", "Los demás creen que vas a girar y pueden salir delante de ti", "Gasta batería"],
+                "correct": [1]
+              },
+              "explanation": "Muchos intermitentes de moto no se apagan solos. Uno olvidado engaña a quien espera para incorporarse.",
+              "source": "Conducción preventiva en moto (Garaje)",
+              "concepts": ["visibilidad", "luces"]
+            }
+          ]
+        },
+        {
+          "ref": "factor-humano",
+          "title": "Factor humano y accidentes",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Tú también eres parte de la moto",
+              "explanation": "- **Fatiga**: en moto llega antes (viento, ruido, postura, frío o calor). Para cada **2 horas** como mucho, y antes si notas que te cuesta concentrarte.\n- **Hidratación**: con calor, bebe agua en cada parada; la deshidratación reduce la atención.\n- **Alcohol y drogas**: afectan al equilibrio, imprescindible en moto. Si bebes, no conduzcas.\n\nSi presencias un accidente: **P**roteger (señaliza, chaleco), **A**visar (112) y **S**ocorrer. A un motorista herido **no le quites el casco** salvo que no pueda respirar y sepas hacerlo entre dos."
+            },
+            {
+              "ref": "pas",
+              "kind": "order",
+              "prompt": "Ordena cómo actuar si llegas el primero a un accidente.",
+              "data": {"items": ["Proteger el lugar y protegerte", "Avisar al 112", "Socorrer a los heridos"]},
+              "explanation": "PAS: primero que no haya más víctimas (incluida tú), luego avisar, y después atender.",
+              "source": "Primeros auxilios en carretera (PAS)",
+              "concepts": ["accidente"]
+            },
+            {
+              "ref": "casco-herido",
+              "kind": "truefalse",
+              "prompt": "A un motorista herido inconsciente hay que quitarle el casco enseguida para que respire mejor.",
+              "data": {"answer": false},
+              "explanation": "Quitarlo mal puede agravar una lesión de cuello. Solo si no respira y se sabe hacer (entre dos, inmovilizando cabeza y cuello).",
+              "source": "Primeros auxilios en carretera (PAS)",
+              "concepts": ["accidente"]
+            },
+            {
+              "ref": "paradas",
+              "kind": "choice",
+              "prompt": "En un viaje largo en moto, ¿cada cuánto conviene parar a descansar como mínimo?",
+              "data": {"options": ["Cada 30 minutos", "Cada 2 horas, o antes si notas cansancio", "Solo al repostar"], "correct": [1]},
+              "explanation": "Es la recomendación general; en moto, con frío, calor o viento, el cansancio llega antes.",
+              "source": "Factores humanos en la conducción (Garaje)",
+              "concepts": ["factor humano"]
+            },
+            {
+              "ref": "calor",
+              "kind": "choice",
+              "prompt": "Ruta de verano a 38 °C. ¿Qué es lo más sensato?",
+              "data": {
+                "options": ["Quitarse la chaqueta para no pasar calor", "Ropa de verano con protecciones y ventilación, beber agua en cada parada y evitar las horas centrales", "No beber para no tener que parar"],
+                "correct": [1]
+              },
+              "explanation": "La ropa ventilada protege sin cocerte. La deshidratación da dolor de cabeza y baja la atención.",
+              "source": "Factores humanos en la conducción (Garaje)",
+              "concepts": ["factor humano", "equipamiento"]
+            },
+            {
+              "ref": "alcohol",
+              "kind": "truefalse",
+              "prompt": "Como en moto vas más atento que en coche, una cerveza afecta menos.",
+              "data": {"answer": false},
+              "explanation": "El alcohol afecta al equilibrio, a los reflejos y a la percepción del riesgo, y en moto el equilibrio lo es todo. Lo seguro es no beber nada si vas a conducir.",
+              "source": "Factores humanos en la conducción (Garaje)",
+              "concepts": ["factor humano"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "pruebas",
+      "title": "Cómo son las pruebas",
+      "extra": true,
+      "lessons": [
+        {
+          "ref": "practicas",
+          "title": "Pista y circulación",
+          "steps": [
+            {
+              "ref": "intro",
+              "kind": "info",
+              "prompt": "Las dos prácticas",
+              "explanation": "**Prueba de pista** (circuito cerrado): maniobras a baja velocidad y de control, como recorridos entre conos, giros cerrados, una frenada y una esquiva. Se valora el control de la moto: no apoyar el pie, no tocar los conos, la postura y la mirada.\n\n**Prueba en circulación**: por vías abiertas, con el examinador siguiéndote y dándote indicaciones por radio. Se valora lo mismo que en el B, más lo propio de la moto: posición en el carril, mirar antes de cada maniobra, distancias y uso de los dos frenos.\n\nLas faltas se clasifican en **eliminatorias**, **deficientes** y **leves**. Pregunta a tu autoescuela el baremo y las maniobras vigentes: la DGT los actualiza."
+            },
+            {
+              "ref": "pie",
+              "kind": "truefalse",
+              "prompt": "En las maniobras de la pista, apoyar un pie en el suelo para no caerse no penaliza.",
+              "data": {"answer": false},
+              "explanation": "Apoyar el pie en una maniobra es falta. Se practica con embrague, gas y freno trasero precisamente para no necesitarlo.",
+              "source": "Pruebas de aptitud del A2 (orientativo)",
+              "concepts": ["baja velocidad"]
+            },
+            {
+              "ref": "radio",
+              "kind": "choice",
+              "prompt": "En la prueba en circulación, ¿cómo te da las indicaciones el examinador?",
+              "data": {"options": ["Va de pasajero en tu moto", "Te sigue en otro vehículo y te habla por radio o intercomunicador", "Con señales con la mano desde la acera"], "correct": [1]},
+              "explanation": "Vas sola en la moto; el examinador te sigue y te guía por radio.",
+              "source": "Pruebas de aptitud del A2 (orientativo)",
+              "concepts": ["permiso"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -8,6 +8,7 @@ export type ViewMode = "xray" | "exterior";
 
 type Props = {
   fuelType: string;
+  kind?: "car" | "motorcycle";
   statuses: Record<string, PartStatus>;
   selected: string | null;
   dark: boolean;
@@ -125,6 +126,9 @@ type Body = {
   paint: THREE.MeshPhysicalMaterial;
   glass: THREE.MeshPhysicalMaterial;
   edges: THREE.LineSegments[];
+  // Piezas de la estructura sin estado propio (chasis, asiento, manillar de la moto): se
+  // vuelven translúcidas en rayos X para dejar ver lo de dentro.
+  trim?: THREE.MeshStandardMaterial[];
 };
 
 function buildBody(): Body {
@@ -275,8 +279,161 @@ function partsFor(fuelType: string): PartDef[] {
   return list;
 }
 
+// --- Moto -------------------------------------------------------------------
+
+// Naked media de 2,1 m: batalla 1,42 m, ruedas de 17" (0,31 m de radio).
+const M_FRONT_X = 0.71;
+const M_REAR_X = -0.71;
+const M_HEAD: [number, number] = [0.5, 0.98]; // pipa de dirección
+const M_PIVOT: [number, number] = [-0.14, 0.42]; // eje del basculante
+// Lo que en una moto se ve sin carenado: también visible en «Exterior».
+const MOTO_EXPOSED = new Set(["tyres", "brakes", "suspension", "chain", "exhaust", "engine", "cooling", "gearbox"]);
+
+/** Barra entre dos puntos del plano lateral (cilindro en el eje y, girado en z). */
+function rod(x1: number, y1: number, x2: number, y2: number, r: number) {
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  return { geom: cylinder(r, len, "y", 16), pos: [(x1 + x2) / 2, (y1 + y2) / 2] as [number, number], rot: Math.atan2(-(x2 - x1), y2 - y1) };
+}
+
+function motoBody(): Body {
+  const group = new THREE.Group();
+  const paint = new THREE.MeshPhysicalMaterial({ color: 0x8aa2b8, metalness: 0.55, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.08, transparent: true });
+  const glass = new THREE.MeshPhysicalMaterial({ color: 0x1e293b, metalness: 0.4, roughness: 0.04, clearcoat: 1, transparent: true, opacity: 0.7, depthWrite: false });
+  const edges: THREE.LineSegments[] = [];
+  // Depósito y colín (pintados), con su perfil lateral extruido.
+  const tank = new THREE.Shape();
+  tank.moveTo(0.36, 0.84);
+  tank.quadraticCurveTo(0.3, 1.0, 0.12, 1.02);
+  tank.quadraticCurveTo(-0.1, 1.02, -0.2, 0.9);
+  tank.lineTo(-0.22, 0.8);
+  tank.quadraticCurveTo(0.05, 0.74, 0.36, 0.84);
+  const tail = new THREE.Shape();
+  tail.moveTo(-0.5, 0.84);
+  tail.lineTo(-0.9, 0.98);
+  tail.quadraticCurveTo(-0.93, 0.94, -0.9, 0.92);
+  tail.lineTo(-0.5, 0.76);
+  tail.lineTo(-0.5, 0.84);
+  for (const [shape, width] of [[tank, 0.34], [tail, 0.2]] as const) {
+    const geom = extrude(shape, width, 0.04);
+    const mesh = new THREE.Mesh(geom, paint);
+    mesh.castShadow = true;
+    group.add(mesh);
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(geom, 28), new THREE.LineBasicMaterial({ transparent: true }));
+    group.add(e);
+    edges.push(e);
+  }
+  // Cúpula y faro.
+  const screen = new THREE.Mesh(box(0.02, 0.18, 0.26, 0.008), glass);
+  screen.position.set(0.6, 1.1, 0);
+  screen.rotation.z = -0.5;
+  const lamp = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, emissive: 0xfff7d6, emissiveIntensity: 0.6, roughness: 0.1 });
+  const head = new THREE.Mesh(cylinder(0.085, 0.06, "x", 32), lamp);
+  head.position.set(0.62, 0.98, 0);
+  const tailLight = new THREE.Mesh(box(0.03, 0.04, 0.12, 0.01), new THREE.MeshStandardMaterial({ color: 0x7f1d1d, emissive: 0xdc2626, emissiveIntensity: 0.5 }));
+  tailLight.position.set(-0.91, 0.94, 0);
+  group.add(screen, head, tailLight);
+  // Chasis, asiento, manillar y estriberas: estructura sin estado propio.
+  const frameMat = new THREE.MeshStandardMaterial({ color: DARK_METAL.color, metalness: 0.7, roughness: 0.45, transparent: true });
+  const seatMat = new THREE.MeshStandardMaterial({ color: 0x1b1d21, roughness: 0.85, transparent: true });
+  const trimMat = new THREE.MeshStandardMaterial({ color: PLASTIC.color, metalness: 0.2, roughness: 0.6, transparent: true });
+  const add = (geom: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number, rz = 0) => {
+    const m = new THREE.Mesh(geom, mat);
+    m.position.set(x, y, z);
+    m.rotation.z = rz;
+    m.castShadow = true;
+    group.add(m);
+  };
+  for (const z of [0.1, -0.1]) {
+    const a = rod(M_HEAD[0], M_HEAD[1] - 0.04, M_PIVOT[0], M_PIVOT[1] + 0.12, 0.022);
+    add(a.geom, frameMat, a.pos[0], a.pos[1], z, a.rot);
+    const b = rod(M_PIVOT[0], M_PIVOT[1] + 0.12, -0.6, 0.86, 0.016); // subchasis
+    add(b.geom, frameMat, b.pos[0], b.pos[1], z * 0.8, b.rot);
+    add(box(0.12, 0.02, 0.05, 0.008), trimMat, -0.12, 0.36, z * 2.4); // estriberas
+  }
+  add(box(0.5, 0.08, 0.26, 0.04), seatMat, -0.44, 0.86, 0, 0.12);
+  add(cylinder(0.014, 0.7, "z"), trimMat, 0.44, 1.12, 0);
+  for (const z of [0.3, -0.3]) {
+    // Retrovisores con su brazo desde el manillar.
+    add(cylinder(0.007, 0.13, "y"), trimMat, 0.45, 1.18, z * 0.85);
+    add(box(0.02, 0.05, 0.09, 0.01), trimMat, 0.45, 1.26, z * 0.85);
+  }
+  return { group, paint, glass, edges, trim: [frameMat, seatMat, trimMat] };
+}
+
+function motoWheel(x: number, width: number): THREE.Group {
+  const g = new THREE.Group();
+  const pts: THREE.Vector2[] = [];
+  const inner = 0.24;
+  for (let i = 0; i <= 16; i++) {
+    const a = (i / 16) * Math.PI;
+    pts.push(new THREE.Vector2(inner + 0.07 * Math.sin(a), (width / 2) * Math.cos(a)));
+  }
+  const tyreGeom = new THREE.LatheGeometry(pts, 48);
+  tyreGeom.rotateX(Math.PI / 2);
+  const tyre = new THREE.Mesh(tyreGeom, new THREE.MeshStandardMaterial({ color: RUBBER.color, roughness: 0.9 }));
+  tyre.castShadow = true;
+  const rimMat = new THREE.MeshStandardMaterial({ color: 0x2b2f36, metalness: 0.8, roughness: 0.3 });
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.235, 0.012, 8, 48), rimMat);
+  g.add(tyre, rim);
+  for (let i = 0; i < 3; i++) {
+    const spoke = new THREE.Mesh(box(0.025, 0.46, 0.02, 0.006), rimMat);
+    spoke.rotation.z = (i / 3) * Math.PI;
+    g.add(spoke);
+  }
+  g.add(new THREE.Mesh(cylinder(0.035, width * 0.9, "z"), rimMat));
+  g.position.set(x, WHEEL_R, 0);
+  return g;
+}
+
+function motoPartsFor(fuelType: string): PartDef[] {
+  const combustion = fuelType !== "electric";
+  const at = (r: ReturnType<typeof rod>, z: number) => ({ geom: r.geom, pos: [r.pos[0], r.pos[1], z] as [number, number, number], rot: [0, 0, r.rot] as [number, number, number] });
+  const list: PartDef[] = [
+    { id: "battery", geom: box(0.14, 0.1, 0.1, 0.01), pos: [-0.34, 0.68, 0], mat: PLASTIC },
+    { id: "ecu", geom: box(0.12, 0.04, 0.09, 0.008), pos: [-0.56, 0.78, 0], mat: { color: 0x9ca3af, metalness: 0.7, roughness: 0.4 } },
+    { id: "ecu", geom: box(0.06, 0.08, 0.16, 0.01), pos: [0.5, 1.12, 0], mat: PLASTIC, rot: [0, 0, -0.4] }, // cuadro
+    // Horquilla (dos barras de la pipa al eje) y amortiguador trasero; basculante.
+    ...[0.08, -0.08].map<PartDef>((z) => ({ id: "suspension", ...at(rod(M_FRONT_X, WHEEL_R, M_HEAD[0], M_HEAD[1], 0.024), z), mat: { color: 0xd4a017, metalness: 0.8, roughness: 0.3 } })),
+    { id: "suspension", ...at(rod(-0.3, 0.42, -0.2, 0.74, 0.03), 0), mat: { color: 0xb91c1c, metalness: 0.5, roughness: 0.4 } },
+    ...[0.09, -0.09].map<PartDef>((z) => ({ id: "suspension", ...at(rod(M_PIVOT[0], M_PIVOT[1], M_REAR_X, WHEEL_R, 0.022), z), mat: METAL })),
+    // Frenos: disco y pinza delanteros (a la derecha) y trasero.
+    { id: "brakes", geom: cylinder(0.15, 0.008, "z", 40), pos: [M_FRONT_X, WHEEL_R, 0.06], mat: { color: 0x9aa1aa, metalness: 0.85, roughness: 0.35 } },
+    { id: "brakes", geom: box(0.06, 0.1, 0.04, 0.01), pos: [M_FRONT_X - 0.1, WHEEL_R + 0.1, 0.07], mat: { color: 0xb91c1c, metalness: 0.3, roughness: 0.5 } },
+    { id: "brakes", geom: cylinder(0.11, 0.008, "z", 36), pos: [M_REAR_X, WHEEL_R, -0.07], mat: { color: 0x9aa1aa, metalness: 0.85, roughness: 0.35 } },
+    // Transmisión final: piñón, corona y los dos tramos de cadena (lado izquierdo).
+    { id: "chain", geom: cylinder(0.05, 0.02, "z", 20), pos: [-0.08, 0.4, 0.12], mat: DARK_METAL },
+    { id: "chain", geom: cylinder(0.11, 0.015, "z", 32), pos: [M_REAR_X, WHEEL_R, 0.11], mat: METAL },
+    { id: "chain", ...at(rod(-0.08, 0.45, M_REAR_X, WHEEL_R + 0.11, 0.009), 0.115), mat: DARK_METAL },
+    { id: "chain", ...at(rod(-0.08, 0.35, M_REAR_X, WHEEL_R - 0.11, 0.009), 0.115), mat: DARK_METAL },
+  ];
+  if (combustion) {
+    list.push(
+      // Motor bicilíndrico: cárter, cilindros inclinados y tapa; cambio detrás.
+      { id: "engine", geom: box(0.34, 0.2, 0.26, 0.03), pos: [0.08, 0.4, 0], mat: DARK_METAL },
+      { id: "engine", geom: box(0.18, 0.24, 0.24, 0.03), pos: [0.17, 0.6, 0], mat: METAL, rot: [0, 0, -0.35] },
+      { id: "engine", geom: box(0.16, 0.06, 0.22, 0.02), pos: [0.22, 0.73, 0], mat: PLASTIC, rot: [0, 0, -0.35] },
+      { id: "gearbox", geom: box(0.18, 0.16, 0.22, 0.03), pos: [-0.12, 0.44, 0], mat: { color: 0xa3a3a3, metalness: 0.7, roughness: 0.45 } },
+      { id: "intake", geom: box(0.22, 0.1, 0.22, 0.03), pos: [0.02, 0.76, 0], mat: PLASTIC },
+      { id: "injection", geom: cylinder(0.025, 0.12, "y"), pos: [0.12, 0.74, 0.07], mat: METAL },
+      { id: "fuel_tank", geom: box(0.38, 0.14, 0.26, 0.05), pos: [0.08, 0.9, 0], mat: PLASTIC },
+      { id: "cooling", geom: box(0.04, 0.26, 0.3, 0.015), pos: [0.38, 0.62, 0], mat: { color: 0x9ca3af, metalness: 0.6, roughness: 0.5 }, rot: [0, 0, -0.2] },
+      // Escape: colectores bajo el motor y silencioso a la derecha.
+      { id: "exhaust", ...at(rod(0.28, 0.5, 0.2, 0.22, 0.022), 0.05), mat: METAL },
+      { id: "exhaust", ...at(rod(0.2, 0.22, -0.3, 0.25, 0.025), 0.1), mat: METAL },
+      { id: "exhaust", geom: cylinder(0.06, 0.32, "x"), pos: [-0.45, 0.32, 0.16], mat: METAL, rot: [0, 0, 0.15] }
+    );
+  } else {
+    list.push(
+      { id: "hv_battery", geom: box(0.4, 0.3, 0.24, 0.03), pos: [0.08, 0.6, 0], mat: { color: 0x334155, metalness: 0.5, roughness: 0.5 } },
+      { id: "emotor", geom: cylinder(0.09, 0.16, "z"), pos: [-0.08, 0.4, 0], mat: METAL },
+      { id: "cooling", geom: box(0.04, 0.18, 0.24, 0.015), pos: [0.36, 0.58, 0], mat: { color: 0x9ca3af, metalness: 0.6, roughness: 0.5 } }
+    );
+  }
+  return list;
+}
+
 /** Escena three.js del gemelo digital. Se carga bajo demanda (chunk aparte). */
-export default function CarScene({ fuelType, statuses, selected, dark, reducedMotion, mode, bodyColor, onSelect, onWebGLUnavailable }: Props) {
+export default function CarScene({ fuelType, kind = "car", statuses, selected, dark, reducedMotion, mode, bodyColor, onSelect, onWebGLUnavailable }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef({ statuses, selected, dark, reducedMotion, mode, bodyColor });
   stateRef.current = { statuses, selected, dark, reducedMotion, mode, bodyColor };
@@ -317,23 +474,26 @@ export default function CarScene({ fuelType, statuses, selected, dark, reducedMo
     sun.shadow.radius = 6;
     scene.add(sun, new THREE.HemisphereLight(0xffffff, 0x334455, 0.35));
 
+    const moto = kind === "motorcycle";
     const car = new THREE.Group();
     car.position.y = -0.7;
+    // La moto se pinta a mayor escala para que ocupe el mismo encuadre que un coche.
+    if (moto) car.scale.setScalar(1.75);
     scene.add(car);
-    const body = buildBody();
+    const body = moto ? motoBody() : buildBody();
     car.add(body.group);
 
     const parts: Part[] = [];
     const tyres: THREE.Mesh[] = [];
-    for (const [x, z] of WHEELS) {
-      const w = wheel(x, z);
+    const wheels = moto ? [motoWheel(M_FRONT_X, 0.12), motoWheel(M_REAR_X, 0.17)] : WHEELS.map(([x, z]) => wheel(x, z));
+    for (const w of wheels) {
       car.add(w);
       w.traverse((o) => {
         if ((o as THREE.Mesh).isMesh && (o as THREE.Mesh).geometry.type === "LatheGeometry") tyres.push(o as THREE.Mesh);
       });
     }
     tyres.forEach((t) => parts.push({ id: "tyres", mesh: t, base: RUBBER }));
-    for (const def of partsFor(fuelType)) {
+    for (const def of moto ? motoPartsFor(fuelType) : partsFor(fuelType)) {
       const mesh = new THREE.Mesh(def.geom, new THREE.MeshStandardMaterial({ color: def.mat.color, metalness: def.mat.metalness ?? 0.2, roughness: def.mat.roughness ?? 0.5, transparent: true }));
       mesh.position.set(...def.pos);
       if (def.rot) mesh.rotation.set(...def.rot);
@@ -409,6 +569,10 @@ export default function CarScene({ fuelType, statuses, selected, dark, reducedMo
       body.paint.opacity = xray ? 0.07 : 1;
       body.paint.depthWrite = !xray;
       body.glass.opacity = xray ? 0.05 : 0.85;
+      for (const m of body.trim ?? []) {
+        m.opacity = xray ? 0.12 : 1;
+        m.depthWrite = !xray;
+      }
       const bodyStatus = st.body ?? "ok";
       for (const e of body.edges) {
         const m = e.material as THREE.LineBasicMaterial;
@@ -419,7 +583,7 @@ export default function CarScene({ fuelType, statuses, selected, dark, reducedMo
       for (const { id, mesh, base } of parts) {
         const status = st[id] ?? "ok";
         const mat = mesh.material as THREE.MeshStandardMaterial;
-        const always = id === "tyres" || id === "brakes" || id === "suspension";
+        const always = moto ? MOTO_EXPOSED.has(id) : id === "tyres" || id === "brakes" || id === "suspension";
         mesh.visible = xray || always;
         if (status === "ok") {
           mat.color.setHex(base.color);
@@ -461,9 +625,9 @@ export default function CarScene({ fuelType, statuses, selected, dark, reducedMo
       renderer.dispose();
       mount.removeChild(renderer.domElement);
     };
-    // La escena se reconstruye solo si cambia el tipo de motor; el resto se lee en cada frame.
+    // La escena se reconstruye solo si cambia el tipo de vehículo o de motor; el resto se lee en cada frame.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fuelType]);
+  }, [fuelType, kind]);
 
   return <div ref={mountRef} className="car-scene" />;
 }

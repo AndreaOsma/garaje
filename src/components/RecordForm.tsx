@@ -1,5 +1,6 @@
 import { useId, useState, type FormEvent } from "react";
 import { capitalize } from "../format";
+import { Check, Icon, TriangleAlert } from "../vendor/icons";
 
 export type FieldType = "text" | "number" | "date" | "select" | "textarea" | "checkbox" | "color";
 
@@ -150,8 +151,8 @@ export function RecordForm({ fields, initial, submitLabel = "Guardar", detailed,
         })}
       </div>
       <div className="form-status" role="status" aria-live="polite">
-        {state === "error" && <p className="form-error">⚠️ {error}</p>}
-        {state === "success" && <p className="form-success">✓ Guardado</p>}
+        {state === "error" && <p className="form-error"><Icon svg={TriangleAlert} /> {error}</p>}
+        {state === "success" && <p className="form-success"><Icon svg={Check} /> Guardado</p>}
       </div>
       <div className="form-actions">
         {onCancel && (

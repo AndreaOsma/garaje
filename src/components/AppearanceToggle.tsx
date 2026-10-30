@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Check, Icon, Moon, Sun, SunMoon } from "../vendor/icons";
 
 type DayNightMode = "day" | "night" | "auto";
 
@@ -7,16 +8,18 @@ type Props = {
   onChange: (mode: DayNightMode) => void;
 };
 
-const OPTIONS: Array<{ id: DayNightMode; emoji: string; label: string }> = [
-  { id: "day", emoji: "☀️", label: "Modo claro" },
-  { id: "night", emoji: "🌙", label: "Modo oscuro" },
-  { id: "auto", emoji: "🌘", label: "Automático" },
+// Selector de tema (AGENTS.md): el botón lleva el icono del tema activo y el menú, icono + texto con el
+// elegido marcado. Iconos de lib/icons/ui vía src/vendor/icons.
+const OPTIONS: Array<{ id: DayNightMode; icon: string; text: string; label: string }> = [
+  { id: "day", icon: Sun, text: "Día", label: "Tema día" },
+  { id: "night", icon: Moon, text: "Noche", label: "Tema noche" },
+  { id: "auto", icon: SunMoon, text: "Automático", label: "Tema automático: como el sistema" },
 ];
 
 export function AppearanceToggle({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const active = OPTIONS.find((o) => o.id === value) ?? OPTIONS[0];
+  const active = OPTIONS.find((o) => o.id === value) ?? OPTIONS[2];
 
   useEffect(() => {
     if (!open) return;
@@ -35,23 +38,18 @@ export function AppearanceToggle({ value, onChange }: Props) {
   }, [open]);
 
   return (
-    <div
-      ref={rootRef}
-      className={`appearance-toggle${open ? " is-open" : ""}`}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div ref={rootRef} className={`appearance-toggle${open ? " is-open" : ""}`}>
       <button
         type="button"
         className="appearance-toggle__trigger"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls="appearance-toggle-menu"
-        title={`${active.label} — cambiar tema`}
-        aria-label={`Tema actual: ${active.label}. Abrir opciones`}
+        title={`${active.label}. Cambiar tema`}
+        aria-label={`${active.label}. Cambiar tema`}
         onClick={() => setOpen((v) => !v)}
       >
-        <span aria-hidden>{active.emoji}</span>
+        <Icon svg={active.icon} size={20} />
       </button>
       <div
         id="appearance-toggle-menu"
@@ -59,6 +57,8 @@ export function AppearanceToggle({ value, onChange }: Props) {
         role="listbox"
         aria-label="Tema"
         aria-hidden={!open}
+        // Cerrado no se ve: que tampoco reciba el foco con Tab.
+        {...(!open ? { inert: "" } : {})}
       >
         {OPTIONS.map((opt) => (
           <button
@@ -68,13 +68,14 @@ export function AppearanceToggle({ value, onChange }: Props) {
             aria-selected={value === opt.id}
             className={`appearance-toggle__btn${value === opt.id ? " is-active" : ""}`}
             title={opt.label}
-            aria-label={opt.label}
             onClick={() => {
               onChange(opt.id);
               setOpen(false);
             }}
           >
-            <span aria-hidden>{opt.emoji}</span>
+            <Icon svg={opt.icon} size={20} />
+            <span className="appearance-toggle__text">{opt.text}</span>
+            {value === opt.id && <Icon svg={Check} size={16} className="appearance-toggle__check" />}
           </button>
         ))}
       </div>

@@ -6,14 +6,15 @@ import type { Assembly } from "./AssemblyScene";
 import { EngineExplorer } from "./EngineExplorer";
 import { Modal } from "./Modal";
 import { ErrorBox, Loading, useLoad } from "./ui";
+import { CircleCheck, Icon, Info, OctagonAlert, Search, TriangleAlert, X } from "../vendor/icons";
 
 const CarScene = lazy(() => import("./CarScene"));
 
 const LEVEL = {
-  ok: { icon: "✓", label: "Bien" },
-  info: { icon: "ℹ", label: "Aviso" },
-  warn: { icon: "!", label: "Atención" },
-  danger: { icon: "⛔", label: "Grave" },
+  ok: { icon: CircleCheck, label: "Bien" },
+  info: { icon: Info, label: "Aviso" },
+  warn: { icon: TriangleAlert, label: "Atención" },
+  danger: { icon: OctagonAlert, label: "Grave" },
 } as const;
 
 const RANK = { danger: 0, warn: 1, info: 2, ok: 3 } as const;
@@ -64,9 +65,13 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
     setEngineOpen(true);
   };
   const [assembly, setAssembly] = useState<Assembly | null>(null);
+  const moto = vehicle.kind === "motorcycle";
+  const noun = moto ? "moto" : "coche";
   const assemblyFor = (id: string): Assembly | null => {
     const a = OPEN_ASSEMBLY[id];
     if (!a) return null;
+    // Los conjuntos en detalle son de coche (McPherson, caja manual de turismo); en moto, solo los frenos.
+    if (moto && a !== "brake") return null;
     if (a === "gearbox" && vehicle.fuel_type === "electric") return null;
     if (a === "turbo" && vehicle.fuel_type !== "diesel") return null;
     return a;
@@ -97,7 +102,7 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
   };
   const reducedMotion = useReducedMotion();
 
-  if (twin.loading && !twin.data) return <Loading label="Montando el coche…" />;
+  if (twin.loading && !twin.data) return <Loading label={moto ? "Montando la moto…" : "Montando el coche…"} />;
   if (twin.error) return <ErrorBox message={twin.error} onRetry={twin.reload} />;
   const data = twin.data!;
   const statuses = Object.fromEntries(data.components.map((c) => [c.id, c.status]));
@@ -107,13 +112,13 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
   const current: TwinComponent | undefined = data.components.find((c) => c.id === selected);
 
   return (
-    <section className="panel twin" aria-label="Tu coche por dentro">
+    <section className="panel twin" aria-label={`Tu ${noun} por dentro`}>
       <header className="panel__header">
-        <h2>Tu coche por dentro</h2>
+        <h2>Tu {noun} por dentro</h2>
         {noWebGL ? (
           <span className="muted small">Vista en lista</span>
         ) : (
-          <div className="segmented" role="group" aria-label="Vista del coche">
+          <div className="segmented" role="group" aria-label={moto ? "Vista de la moto" : "Vista del coche"}>
             <button type="button" aria-pressed={mode === "xray"} className={mode === "xray" ? "is-active" : ""} onClick={() => changeMode("xray")}>
               Rayos X
             </button>
@@ -125,7 +130,7 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
       </header>
       {vehicle.fuel_type !== "electric" && (
         <button type="button" className="btn btn--ghost btn--sm engine-cta" onClick={() => openEngine(null)}>
-          🔍 Motor por dentro: pistones, levas, válvulas{vehicle.fuel_type === "diesel" ? ", turbo, EGR, FAP" : ""}…
+          <Icon svg={Search} /> Motor por dentro: pistones, levas, válvulas{vehicle.fuel_type === "diesel" ? ", turbo, EGR, FAP" : ""}…
         </button>
       )}
       {assembly && (
@@ -142,7 +147,11 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
         </Modal>
       )}
       {engineOpen && (
-        <Modal title={`Motor de ${vehicle.cylinders ?? 4} cilindros en línea · ${vehicle.fuel_type === "diesel" ? "diésel" : "gasolina"}`} onClose={() => setEngineOpen(false)} wide>
+        <Modal
+          title={`${vehicle.cylinders === 1 ? "Motor monocilíndrico" : `Motor de ${vehicle.cylinders ?? 4} cilindros en línea`} · ${vehicle.fuel_type === "diesel" ? "diésel" : "gasolina"}`}
+          onClose={() => setEngineOpen(false)}
+          wide
+        >
           <EngineExplorer
             vehicle={vehicle}
             dark={dark}
@@ -161,6 +170,7 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
             <Suspense fallback={<Loading label="Cargando 3D…" />}>
               <CarScene
                 fuelType={vehicle.fuel_type}
+                kind={vehicle.kind}
                 statuses={statuses}
                 selected={selected}
                 dark={dark}
@@ -189,17 +199,17 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
                   <span className={`twin__dot twin__dot--${current.status}`} aria-hidden /> {current.name}
                 </h3>
                 <button type="button" className="icon-btn" aria-label="Cerrar detalle" onClick={() => setSelected(null)}>
-                  ✕
+                  <Icon svg={X} />
                 </button>
               </div>
               {assemblyFor(current.id) && (
                 <button type="button" className="btn btn--sm btn--primary engine-open" onClick={() => setAssembly(assemblyFor(current.id))}>
-                  🔍 Ver por dentro
+                  <Icon svg={Search} /> Ver por dentro
                 </button>
               )}
               {ENGINE_IDS.has(current.id) && !assemblyFor(current.id) && vehicle.fuel_type !== "electric" && (
                 <button type="button" className="btn btn--sm btn--primary engine-open" onClick={() => openEngine(OPEN_ENGINE[current.id] ?? null)}>
-                  🔍 Ver el motor por dentro
+                  <Icon svg={Search} /> Ver el motor por dentro
                 </button>
               )}
               {current.items.length === 0 ? (
@@ -209,7 +219,7 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
                   {current.items.map((it, i) => (
                     <li key={i}>
                       <button type="button" className={`twin__item twin__item--${it.level}`} onClick={() => goTab(it.target as TabId)}>
-                        <span aria-hidden>{LEVEL[it.level].icon}</span> {it.text}
+                        <Icon svg={LEVEL[it.level].icon} /> {it.text}
                       </button>
                     </li>
                   ))}
@@ -217,9 +227,9 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
               )}
             </div>
           ) : withProblems.length === 0 ? (
-            <p className="all-good">✅ Todas las piezas sin problemas conocidos.</p>
+            <p className="all-good"><Icon svg={CircleCheck} /> Todas las piezas sin problemas conocidos.</p>
           ) : (
-            <p className="muted small">Toca una pieza en el coche o en la lista para ver qué le pasa.</p>
+            <p className="muted small">Toca una pieza en {moto ? "la moto" : "el coche"} o en la lista para ver qué le pasa.</p>
           )}
 
           {listed.length > 0 && (
@@ -250,7 +260,7 @@ export function CarTwin({ vehicle, detailed, dark, goTab }: Props) {
                 {data.unassigned.map((it, i) => (
                   <li key={i}>
                     <button type="button" className={`twin__item twin__item--${it.level}`} onClick={() => goTab(it.target as TabId)}>
-                      <span aria-hidden>{LEVEL[it.level].icon}</span> {it.text}
+                      <Icon svg={LEVEL[it.level].icon} /> {it.text}
                     </button>
                   </li>
                 ))}

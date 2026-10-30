@@ -4,10 +4,11 @@ import { ASSEMBLIES, partForText } from "../content/assemblies";
 import type { TabId } from "../router";
 import type { Assembly, PartStatus } from "./AssemblyScene";
 import { Loading } from "./ui";
+import { CircleCheck, Icon, Info, OctagonAlert, Pause, Play, TriangleAlert, X } from "../vendor/icons";
 
 const AssemblyScene = lazy(() => import("./AssemblyScene"));
 
-const LEVEL_ICON = { ok: "✓", info: "ℹ", warn: "!", danger: "⛔" } as const;
+const LEVEL_ICON = { ok: CircleCheck, info: Info, warn: TriangleAlert, danger: OctagonAlert } as const;
 const RANK = { danger: 0, warn: 1, info: 2, ok: 3 } as const;
 
 type Props = { assembly: Assembly; items: TwinItem[]; reducedMotion: boolean; goTab: (tab: TabId) => void; initialPart?: string | null };
@@ -70,13 +71,13 @@ export function AssemblyExplorer({ assembly, items, reducedMotion, goTab, initia
                 </span>
               </div>
               {problems.length === 0 ? (
-                <p className="engine__legend-ok">✅ Nada raro en este conjunto</p>
+                <p className="engine__legend-ok"><Icon svg={CircleCheck} /> Nada raro en este conjunto</p>
               ) : (
                 <ul aria-label="Piezas con algo raro">
                   {problems.map(({ key, it }, i) => (
                     <li key={i}>
                       <button type="button" className={`engine__problem engine__problem--${it.level}`} onClick={() => setSelected(key)}>
-                        <span aria-hidden>{LEVEL_ICON[it.level]}</span> <strong>{info.parts[key]?.name ?? key}:</strong> {it.text}
+                        <Icon svg={LEVEL_ICON[it.level]} /> <strong>{info.parts[key]?.name ?? key}:</strong> {it.text}
                       </button>
                     </li>
                   ))}
@@ -87,7 +88,7 @@ export function AssemblyExplorer({ assembly, items, reducedMotion, goTab, initia
         )}
         <div className="engine__controls">
           <button type="button" className="btn btn--sm btn--primary" onClick={() => setPlaying((p) => !p)} aria-pressed={playing}>
-            {playing ? "⏸ Pausa" : "▶ En marcha"}
+            {playing ? <><Icon svg={Pause} /> Pausa</> : <><Icon svg={Play} /> En marcha</>}
           </button>
           <label className="range">
             <span>Velocidad</span>
@@ -109,7 +110,7 @@ export function AssemblyExplorer({ assembly, items, reducedMotion, goTab, initia
             <div className="engine__info-head">
               <h3>{part.name}</h3>
               <button type="button" className="icon-btn" aria-label="Cerrar ficha" onClick={() => setSelected(null)}>
-                ✕
+                <Icon svg={X} />
               </button>
             </div>
             {(byPart[selected!] ?? []).length > 0 && (
@@ -117,7 +118,7 @@ export function AssemblyExplorer({ assembly, items, reducedMotion, goTab, initia
                 {byPart[selected!].map((it, i) => (
                   <li key={i}>
                     <button type="button" className={`twin__item twin__item--${it.level}`} onClick={() => goTab(it.target as TabId)}>
-                      <span aria-hidden>{LEVEL_ICON[it.level]}</span> {it.text}
+                      <Icon svg={LEVEL_ICON[it.level]} /> {it.text}
                     </button>
                   </li>
                 ))}

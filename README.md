@@ -1,6 +1,6 @@
 # Garaje
 
-Gestión de tus vehículos, autoalojada: mantenimiento (plan por km/meses e historial de taller),
+Gestión de tus coches y motos, autoalojada: mantenimiento (plan por km/meses e historial de taller),
 repostajes con consumo real, gastos y coste por km, vencimientos (ITV, seguro, impuesto…) y
 **diagnóstico OBD-II automatizable**: averías explicadas en español, testigo MIL, monitores de
 emisiones para la ITV, tensión de batería y alternador y sesiones de conducción con gráficas.
@@ -32,7 +32,22 @@ emisiones para la ITV, tensión de batería y alternador y sesiones de conducci�
 | 💶 **Gastos** | Todo lo que cuesta el coche y su coste por km |
 | 📄 **Documentos** | ITV, seguro, impuesto… con su caducidad y avisos |
 | 🩺 **Diagnóstico** | Códigos de avería con su descripción, testigo MIL, monitores de emisiones, batería y alternador, sesiones de conducción con gráficas |
-| ⚙️ **Vehículo** | Datos del coche, conexión OBD (token de ingesta) e IA |
+| ⚙️ **Vehículo** | Datos del coche o la moto, conexión OBD (token de ingesta) e IA |
+| 🪪 **Carnés** | Tus permisos de conducir, lo que te falta para el siguiente (edad, antigüedad, pasos) y su teórico en lecciones con racha, repaso de fallos y simulacros |
+
+**Motos:** al crear un vehículo eliges coche o moto. Una moto trae su propio plan de
+mantenimiento (cadena y kit de arrastre, horquilla, holgura de válvulas, embrague hidráulico…),
+sus revisiones («Antes de salir», mensual, antes de la ITV) y su modelo 3D con horquilla,
+basculante y cadena. Los intervalos son orientativos: el manual de tu moto manda.
+
+**Carnés:** resumen del Reglamento General de Conductores para quien ya tiene el B (orientativo:
+confírmalo en la DGT). Trae de serie el teórico específico del **A2** (`backend/content/a2.json`,
+contenido propio, no las preguntas oficiales), con simulacro en el formato del examen (20
+preguntas, 2 fallos). El juego (racha, misiones, chispas, reproductor) es el de Campus Pilot,
+Bitácora e Insignia: una copia generada de `dev/lib/learn-game` del homelab en
+`src/vendor/learn-game/` y `backend/app/learn_game/` (no se edita aquí). Para otros permisos
+puedes importar packs en formato `campus-pilot-course` con `subject_code` igual al código del
+permiso; los de `backend/content/` se importan solos al arrancar sin pisar el progreso.
 
 Los códigos del fabricante (P1xxx, C1xxx…) significan cosas distintas según la marca: con IA
 configurada, Garaje los investiga para *tu* coche y te dice gravedad, causas típicas y fuentes.

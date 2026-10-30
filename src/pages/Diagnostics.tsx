@@ -6,11 +6,12 @@ import { RecordForm, type Field } from "../components/RecordForm";
 import { EmptyState, ErrorBox, Loading, confirmAndRun, useLoad } from "../components/ui";
 import { dateTime, num, reading, relative, today } from "../format";
 import type { TabId } from "../router";
+import { BookOpen, Bot, Check, ChevronDown, ChevronUp, CircleCheck, Hourglass, Icon, Info, Lightbulb, NotebookPen, OctagonAlert, Pencil, Search, Trash2, TriangleAlert, Wrench } from "../vendor/icons";
 
 type Props = { vehicle: Vehicle; detailed: boolean; goTab: (tab: TabId) => void; onVehicleChanged: () => void };
 
 const KIND_LABEL = { stored: "Confirmada", pending: "Pendiente", permanent: "Permanente" } as const;
-const SEVERITY_ICON = { alta: "⛔", media: "⚠️", baja: "ℹ️" } as const;
+const SEVERITY_ICON = { alta: OctagonAlert, media: TriangleAlert, baja: Info } as const;
 // Sensores que se grafican en modo minimal (el resto, en detailed).
 const KEY_SENSORS = new Set(["0C", "0D", "05", "5C", "04", "BATT", "42", "06", "07", "10", "0B"]);
 
@@ -46,7 +47,7 @@ function EcuStatus({ vehicle }: { vehicle: Vehicle }) {
       ) : (
         <>
           <p className={`ecu-mil ${vehicle.mil_on ? "is-on" : "is-off"}`}>
-            <span aria-hidden>{vehicle.mil_on ? "🟠" : "🟢"}</span>
+            <Icon svg={vehicle.mil_on ? TriangleAlert : CircleCheck} />{" "}
             {vehicle.mil_on ? "Testigo de avería encendido" : "Testigo de avería apagado"}
             {vehicle.ecu_dtc_count != null && (
               <span className="muted">
@@ -58,12 +59,12 @@ function EcuStatus({ vehicle }: { vehicle: Vehicle }) {
           {monitors && monitors.monitors.length > 0 && (
             <>
               <p className="readiness">
-                {monitors.ready ? "✅ Monitores completos: lista para la prueba OBD de la ITV" : "⏳ Monitores incompletos: conduce más antes de la ITV"}
+                {monitors.ready ? <><Icon svg={CircleCheck} /> Monitores completos: lista para la prueba OBD de la ITV</> : <><Icon svg={Hourglass} /> Monitores incompletos: conduce más antes de la ITV</>}
               </p>
               <ul className="monitors">
                 {monitors.monitors.map((m) => (
                   <li key={m.name} className={m.complete ? "is-complete" : "is-pending"}>
-                    <span aria-hidden>{m.complete ? "✓" : "…"}</span> {m.name}
+                    {m.complete ? <Icon svg={Check} /> : <span aria-hidden>…</span>} {m.name}
                     <span className="sr-only">{m.complete ? " completo" : " incompleto"}</span>
                   </li>
                 ))}
@@ -77,10 +78,10 @@ function EcuStatus({ vehicle }: { vehicle: Vehicle }) {
 }
 
 const LEARNED_TAG = {
-  manual: { label: "✎ tuya", title: "Descripción escrita por ti" },
-  import: { label: "📖 del informe", title: "Aprendida de un informe importado" },
-  web: { label: "🔎 buscado en la web", title: "Buscado automáticamente con fuentes de tu marca" },
-  ia: { label: "🤖 orientativo", title: "Sugerido por la IA local sin acceso a internet: compruébalo" },
+  manual: { icon: Pencil, label: "tuya", title: "Descripción escrita por ti" },
+  import: { icon: BookOpen, label: "del informe", title: "Aprendida de un informe importado" },
+  web: { icon: Search, label: "buscado en la web", title: "Buscado automáticamente con fuentes de tu marca" },
+  ia: { icon: Bot, label: "orientativo", title: "Sugerido por la IA local sin acceso a internet: compruébalo" },
 } as const;
 
 function DtcCard({
@@ -103,7 +104,7 @@ function DtcCard({
       <div className="card__body">
         <div className="card__title">
           <strong>
-            <span aria-hidden>{SEVERITY_ICON[dtc.severity]} </span>
+            <Icon svg={SEVERITY_ICON[dtc.severity]} />{" "}
             <code>{dtc.code}</code> · {KIND_LABEL[dtc.kind]}
           </strong>
           <span className="muted small">Gravedad {dtc.severity}</span>
@@ -112,7 +113,7 @@ function DtcCard({
           {dtc.description}{" "}
           {dtc.learned && (
             <span className="tag" title={LEARNED_TAG[dtc.learned].title}>
-              {LEARNED_TAG[dtc.learned].label}
+              <Icon svg={LEARNED_TAG[dtc.learned].icon} /> {LEARNED_TAG[dtc.learned].label}
             </span>
           )}
           <button type="button" className="link-btn small" onClick={() => onAction("define")}>
@@ -133,7 +134,7 @@ function DtcCard({
                     ))}
                   </ul>
                 )}
-                {d.advice && <p>💡 {d.advice}</p>}
+                {d.advice && <p><Icon svg={Lightbulb} /> {d.advice}</p>}
                 {d.sources.length > 0 && (
                   <p className="small">
                     Fuentes:{" "}
@@ -170,17 +171,17 @@ function DtcCard({
             <span>Origen: {dtc.source}</span>
           </div>
         )}
-        {dtc.notes && <p className="dtc__notes">📝 {dtc.notes}</p>}
+        {dtc.notes && <p className="dtc__notes"><Icon svg={NotebookPen} /> {dtc.notes}</p>}
       </div>
       <div className="card__actions">
         {!dtc.cleared_at && (
           <button type="button" className="btn btn--sm btn--ghost" onClick={() => onAction("issue")} title="Abrir una incidencia en Mecánica">
-            🔧 Incidencia
+            <Icon svg={Wrench} /> Incidencia
           </button>
         )}
         {!dtc.cleared_at && (
           <button type="button" className="btn btn--sm btn--ghost" onClick={() => onAction("clear")} title="Marcar como resuelta">
-            ✓ Resuelta
+            <Icon svg={Check} /> Resuelta
           </button>
         )}
         {canResearch && (dtc.learned === null || dtc.learned === "ia" || dtc.learned === "web") && (
@@ -191,14 +192,14 @@ function DtcCard({
             disabled={researching}
             title="Buscar qué significa este código en tu marca y modelo"
           >
-            {researching ? "Buscando…" : dtc.learned ? "🔎 Buscar de nuevo" : "🔎 Buscar significado"}
+            {researching ? "Buscando…" : <><Icon svg={Search} /> {dtc.learned ? "Buscar de nuevo" : "Buscar significado"}</>}
           </button>
         )}
         <button type="button" className="icon-btn" aria-label="Notas" title="Notas" onClick={() => onAction("notes")}>
-          📝
+          <Icon svg={NotebookPen} />
         </button>
         <button type="button" className="icon-btn icon-btn--danger" aria-label="Eliminar" title="Eliminar" onClick={() => onAction("delete")}>
-          🗑
+          <Icon svg={Trash2} />
         </button>
       </div>
     </li>
@@ -268,8 +269,8 @@ function CsvImport({ vehicle, onImported }: { vehicle: Vehicle; onImported: () =
         {state === "loading" ? "Importando…" : "Importar"}
       </button>
       <p role="status" aria-live="polite" className={state === "error" ? "form-error" : "form-success"}>
-        {state === "error" && `⚠️ ${message}`}
-        {state === "success" && `✓ ${message}`}
+        {state === "error" && <><Icon svg={TriangleAlert} /> {message}</>}
+        {state === "success" && <><Icon svg={Check} /> {message}</>}
       </p>
     </form>
   );
@@ -407,7 +408,7 @@ export function Diagnostics({ vehicle, detailed, goTab, onVehicleChanged }: Prop
         {dtcs.error && <ErrorBox message={dtcs.error} onRetry={dtcs.reload} />}
         {researchMsg && (
           <p className="form-error" role="alert">
-            ⚠️ {researchMsg}
+            <Icon svg={TriangleAlert} /> {researchMsg}
           </p>
         )}
         {research.data && !canResearch && active.some((d) => d.learned === null) && (
@@ -418,7 +419,7 @@ export function Diagnostics({ vehicle, detailed, goTab, onVehicleChanged }: Prop
         {dtcs.loading && !dtcs.data ? (
           <Loading />
         ) : active.length === 0 ? (
-          <p className="all-good">✅ Sin averías activas.</p>
+          <p className="all-good"><Icon svg={CircleCheck} /> Sin averías activas.</p>
         ) : (
           <ul className="card-list">
             {active.map((d) => (
@@ -517,7 +518,7 @@ export function Diagnostics({ vehicle, detailed, goTab, onVehicleChanged }: Prop
                         {detailed && ` · ${s.sample_count} lecturas · ${s.label}`}
                       </span>
                     </span>
-                    <span aria-hidden>{openSession === s.id ? "▴" : "▾"}</span>
+                    <Icon svg={openSession === s.id ? ChevronUp : ChevronDown} />
                   </button>
                   <button
                     type="button"
@@ -526,7 +527,7 @@ export function Diagnostics({ vehicle, detailed, goTab, onVehicleChanged }: Prop
                     title="Eliminar sesión"
                     onClick={() => confirmAndRun("¿Eliminar esta sesión y sus lecturas?", () => api.sessions.remove(vehicle.id, s.id), sessions.reload)}
                   >
-                    🗑
+                    <Icon svg={Trash2} />
                   </button>
                 </div>
                 {openSession === s.id && <SessionView vehicle={vehicle} sessionId={s.id} detailed={detailed} />}

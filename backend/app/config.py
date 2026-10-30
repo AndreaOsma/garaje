@@ -1,5 +1,6 @@
 """Configuración leída de variables de entorno. Sin pydantic-settings: pocas claves, ad-hoc como en Soberan."""
 import os
+from pathlib import Path
 
 APP_NAME = "Garaje"
 
@@ -28,3 +29,6 @@ LOW_BATTERY_VOLTS = 12.2
 # Zona horaria por defecto para interpretar los CSV de Car Scanner (sus tiempos son
 # "segundos desde medianoche" en hora local del móvil) cuando quien sube no la indica.
 DEFAULT_TZ = os.getenv("GARAJE_TZ", "Europe/Madrid")
+
+# Packs de teórico de los carnés (formato campus-pilot-course) que se importan al arrancar.
+CONTENT_DIR = Path(os.getenv("GARAJE_CONTENT_DIR", str(Path(__file__).resolve().parent.parent / "content")))

@@ -15,26 +15,34 @@ from sqlalchemy.orm import Session
 from . import config, dtc_dictionary, services
 from .models import Dtc, Issue, MaintenanceTask, ObdLatestValue, Vehicle
 
-# id, nombre, combustibles en los que existe (None = todos)
-COMPONENTS: list[tuple[str, str, Optional[set[str]]]] = [
-    ("engine", "Motor", {"gasoline", "diesel", "hybrid", "phev", "lpg"}),
-    ("injection", "Inyección y combustible", {"gasoline", "diesel", "hybrid", "phev", "lpg"}),
-    ("turbo", "Turbo", {"diesel"}),
-    ("egr", "Válvula EGR", {"diesel"}),
-    ("intake", "Admisión y filtro de aire", {"gasoline", "diesel", "hybrid", "phev", "lpg"}),
-    ("cooling", "Refrigeración (radiador)", None),
-    ("exhaust", "Escape y anticontaminación", {"gasoline", "diesel", "hybrid", "phev", "lpg"}),
-    ("fuel_tank", "Depósito de combustible", {"gasoline", "diesel", "hybrid", "phev", "lpg"}),
-    ("gearbox", "Caja de cambios", None),
-    ("battery", "Batería 12 V", None),
-    ("hv_battery", "Batería de tracción", {"electric", "hybrid", "phev"}),
-    ("emotor", "Motor eléctrico", {"electric", "hybrid", "phev"}),
-    ("ecu", "Centralitas y red CAN", None),
-    ("brakes", "Frenos y ABS", None),
-    ("tyres", "Neumáticos", None),
-    ("suspension", "Suspensión y dirección", None),
-    ("cabin", "Habitáculo y climatización", None),
-    ("body", "Carrocería, luces y lunas", None),
+_COMBUSTION = {"gasoline", "diesel", "hybrid", "phev", "lpg"}
+CAR, MOTO = {"car"}, {"motorcycle"}
+
+# id, nombre, combustibles en los que existe (None = todos), tipos de vehículo (None = todos)
+COMPONENTS: list[tuple[str, str, Optional[set[str]], Optional[set[str]]]] = [
+    ("engine", "Motor", _COMBUSTION, None),
+    ("injection", "Inyección y combustible", _COMBUSTION, None),
+    ("turbo", "Turbo", {"diesel"}, CAR),
+    ("egr", "Válvula EGR", {"diesel"}, CAR),
+    ("intake", "Admisión y filtro de aire", _COMBUSTION, None),
+    ("cooling", "Refrigeración (radiador)", None, None),
+    ("exhaust", "Escape y anticontaminación", _COMBUSTION, None),
+    ("fuel_tank", "Depósito de combustible", _COMBUSTION, None),
+    ("gearbox", "Caja de cambios", None, CAR),
+    ("gearbox", "Cambio y embrague", None, MOTO),
+    ("chain", "Transmisión final (cadena, piñón y corona)", None, MOTO),
+    ("battery", "Batería 12 V", None, None),
+    ("hv_battery", "Batería de tracción", {"electric", "hybrid", "phev"}, None),
+    ("emotor", "Motor eléctrico", {"electric", "hybrid", "phev"}, None),
+    ("ecu", "Centralitas y red CAN", None, CAR),
+    ("ecu", "Centralita y cuadro", None, MOTO),
+    ("brakes", "Frenos y ABS", None, None),
+    ("tyres", "Neumáticos", None, None),
+    ("suspension", "Suspensión y dirección", None, CAR),
+    ("suspension", "Horquilla, amortiguador y dirección", None, MOTO),
+    ("cabin", "Habitáculo y climatización", None, CAR),
+    ("body", "Carrocería, luces y lunas", None, CAR),
+    ("body", "Carenado, luces y retrovisores", None, MOTO),
 ]
 
 _LEVEL_RANK = {"ok": 0, "info": 1, "warn": 2, "danger": 3}
@@ -87,7 +95,8 @@ _ISSUE_CATEGORY = {
 }
 
 _TASK_KEYWORDS: list[tuple[str, str]] = [
-    ("filtro de aire", "intake"), ("filtro de combustible", "injection"), ("glp", "injection"),
+    ("cadena", "chain"), ("arrastre", "chain"), ("embrague", "gearbox"), ("horquilla", "suspension"),
+    ("válvulas", "engine"), ("filtro de aire", "intake"), ("filtro de combustible", "injection"), ("glp", "injection"),
     ("habitáculo", "cabin"), ("batería", "battery"), ("bujía", "engine"), ("distribución", "engine"),
     ("aceite", "engine"), ("frenos", "brakes"), ("pastillas", "brakes"), ("neumático", "tyres"),
     ("escobillas", "body"), ("refrigerante", "cooling"),
@@ -119,9 +128,18 @@ def task_component(task: MaintenanceTask) -> Optional[str]:
     return _ISSUE_CATEGORY.get(task.category)
 
 
+def components_for(vehicle: Vehicle) -> list[tuple[str, str]]:
+    kind = vehicle.kind or "car"
+    return [
+        (cid, name)
+        for cid, name, fuels, kinds in COMPONENTS
+        if (fuels is None or vehicle.fuel_type in fuels) and (kinds is None or kind in kinds)
+    ]
+
+
 def build_twin(db: Session, vehicle: Vehicle, today: Optional[date] = None) -> dict:
     today = today or date.today()
-    present = [(cid, name) for cid, name, fuels in COMPONENTS if fuels is None or vehicle.fuel_type in fuels]
+    present = components_for(vehicle)
     ids = {cid for cid, _ in present}
     items: dict[str, list[dict]] = {cid: [] for cid in ids}
     unassigned: list[dict] = []
@@ -129,6 +147,10 @@ def build_twin(db: Session, vehicle: Vehicle, today: Optional[date] = None) -> d
     def add(comp: Optional[str], item: dict) -> None:
         if comp == "hv_battery" and "hv_battery" not in ids:
             comp = "battery"
+        if comp == "cabin" and "cabin" not in ids:
+            comp = "body"  # una moto no tiene habitáculo: los códigos B van al carenado y cuadro
+        if comp in ("turbo", "egr") and comp not in ids:
+            comp = "engine"
         (items[comp] if comp in ids else unassigned).append(item)
 
     for dtc in db.query(Dtc).filter(Dtc.vehicle_id == vehicle.id, Dtc.cleared_at.is_(None)):
@@ -183,6 +205,7 @@ def build_twin(db: Session, vehicle: Vehicle, today: Optional[date] = None) -> d
         entries.sort(key=lambda e: -_LEVEL_RANK[e["level"]])
     return {
         "fuel_type": vehicle.fuel_type,
+        "kind": vehicle.kind or "car",
         "components": [{"id": cid, "name": name, "status": status(items[cid]), "items": items[cid]} for cid, name in present],
         "unassigned": unassigned,
     }

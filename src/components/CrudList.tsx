@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Modal } from "./Modal";
 import { RecordForm, type Field } from "./RecordForm";
 import { EmptyState, confirmAndRun } from "./ui";
+import { Icon, Pencil, Trash2 } from "../vendor/icons";
 
 type Item = { id: number };
 
@@ -51,7 +52,7 @@ export function CrudList<T extends Item>(props: Props<T>) {
               <div className="card__actions">
                 {props.extraActions?.(item)}
                 <button type="button" className="icon-btn" aria-label="Editar" title="Editar" onClick={() => setEditing(item)}>
-                  ✎
+                  <Icon svg={Pencil} />
                 </button>
                 <button
                   type="button"
@@ -66,7 +67,7 @@ export function CrudList<T extends Item>(props: Props<T>) {
                     )
                   }
                 >
-                  🗑
+                  <Icon svg={Trash2} />
                 </button>
               </div>
             </li>

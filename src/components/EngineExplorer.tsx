@@ -4,11 +4,12 @@ import { ENGINE_PARTS } from "../content/engineParts";
 import type { TabId } from "../router";
 import type { Stroke } from "./EngineScene";
 import { ErrorBox, Loading, useLoad } from "./ui";
+import { ArrowDown, ChevronsUp, CircleCheck, Flame, Icon, Info, OctagonAlert, Pause, Play, TriangleAlert, Wind, X } from "../vendor/icons";
 
 const EngineScene = lazy(() => import("./EngineScene"));
 
-const STROKE_ICON: Record<Stroke, string> = { admisión: "⬇️", compresión: "⏫", explosión: "💥", escape: "💨" };
-const LEVEL_ICON = { ok: "✓", info: "ℹ", warn: "!", danger: "⛔" } as const;
+const STROKE_ICON: Record<Stroke, string> = { admisión: ArrowDown, compresión: ChevronsUp, explosión: Flame, escape: Wind };
+const LEVEL_ICON = { ok: CircleCheck, info: Info, warn: TriangleAlert, danger: OctagonAlert } as const;
 
 type Props = { vehicle: Vehicle; dark: boolean; reducedMotion: boolean; goTab: (tab: TabId) => void; initialPart?: string | null };
 
@@ -82,13 +83,13 @@ export function EngineExplorer({ vehicle, dark, reducedMotion, goTab, initialPar
                 </span>
               </div>
               {problems.length === 0 ? (
-                <p className="engine__legend-ok">✅ Sin nada raro en el motor</p>
+                <p className="engine__legend-ok"><Icon svg={CircleCheck} /> Sin nada raro en el motor</p>
               ) : (
                 <ul aria-label="Piezas con algo raro">
                   {problems.map((p) => (
                     <li key={p.key}>
                       <button type="button" className={`engine__problem engine__problem--${p.level}`} onClick={() => setSelected(p.select)}>
-                        <span aria-hidden>{LEVEL_ICON[p.level]}</span> <strong>{p.name}:</strong> {p.text}
+                        <Icon svg={LEVEL_ICON[p.level]} /> <strong>{p.name}:</strong> {p.text}
                       </button>
                     </li>
                   ))}
@@ -99,7 +100,7 @@ export function EngineExplorer({ vehicle, dark, reducedMotion, goTab, initialPar
               <ol className="engine__strokes" aria-label="Tiempo de cada cilindro">
                 {strokes.map((s, i) => (
                   <li key={i} className={`stroke stroke--${s === "explosión" ? "power" : "other"}`}>
-                    <span aria-hidden>{STROKE_ICON[s]}</span> Cil. {i + 1}: {s}
+                    <Icon svg={STROKE_ICON[s]} /> Cil. {i + 1}: {s}
                   </li>
                 ))}
               </ol>
@@ -108,7 +109,7 @@ export function EngineExplorer({ vehicle, dark, reducedMotion, goTab, initialPar
         )}
         <div className="engine__controls">
           <button type="button" className="btn btn--sm btn--primary" onClick={() => setPlaying((p) => !p)} aria-pressed={playing}>
-            {playing ? "⏸ Pausa" : "▶ Arrancar"}
+            {playing ? <><Icon svg={Pause} /> Pausa</> : <><Icon svg={Play} /> Arrancar</>}
           </button>
           <label className="range">
             <span>Velocidad</span>
@@ -131,7 +132,7 @@ export function EngineExplorer({ vehicle, dark, reducedMotion, goTab, initialPar
             <div className="engine__info-head">
               <h3>{info.name}</h3>
               <button type="button" className="icon-btn" aria-label="Cerrar ficha" onClick={() => setSelected(null)}>
-                ✕
+                <Icon svg={X} />
               </button>
             </div>
             {live.length > 0 && (
@@ -139,7 +140,7 @@ export function EngineExplorer({ vehicle, dark, reducedMotion, goTab, initialPar
                 {live.map((it, i) => (
                   <li key={i}>
                     <button type="button" className={`twin__item twin__item--${it.level}`} onClick={() => goTab(it.target as TabId)}>
-                      <span aria-hidden>{LEVEL_ICON[it.level]}</span> {it.text}
+                      <Icon svg={LEVEL_ICON[it.level]} /> {it.text}
                     </button>
                   </li>
                 ))}
@@ -164,7 +165,7 @@ export function EngineExplorer({ vehicle, dark, reducedMotion, goTab, initialPar
           <ul className="engine__live">
             {cylItems.map((it, i) => (
               <li key={i} className={`twin__item twin__item--${it.level}`}>
-                <span aria-hidden>{LEVEL_ICON[it.level]}</span> Cilindro {it.cyl}: {it.text}
+                <Icon svg={LEVEL_ICON[it.level]} /> Cilindro {it.cyl}: {it.text}
               </li>
             ))}
           </ul>

@@ -15,7 +15,8 @@ WORKDIR /app
 # SECURITY_REFRESH (el CI pasa la fecha) invalida esta capa a diario: en un daemon de
 # Docker compartido se reutilizaría un upgrade cacheado de otra app, ya viejo.
 ARG SECURITY_REFRESH=0
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* \
+ && useradd --system --uid 10001 --user-group --home /app app
 
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -23,6 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app ./app
 COPY backend/alembic ./alembic
 COPY backend/alembic.ini .
+COPY backend/content ./content
 COPY backend/startup.sh .
 RUN chmod +x startup.sh
 

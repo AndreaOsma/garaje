@@ -103,11 +103,12 @@ type Built = {
 };
 
 // ---------------------------------------------------------------------------
-// Motor en línea de N cilindros (2-6), 4 válvulas por cilindro (gasolina / diésel).
+// Motor en línea de N cilindros (1-6), 4 válvulas por cilindro (gasolina / diésel).
 // ---------------------------------------------------------------------------
 
 /** Orden de encendido habitual de cada configuración en línea. */
 export const FIRING_ORDER: Record<number, number[]> = {
+  1: [1],
   2: [1, 2],
   3: [1, 2, 3],
   4: [1, 3, 4, 2],

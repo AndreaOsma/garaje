@@ -9,6 +9,7 @@ import { serviceFields, toServicePayload } from "../forms";
 import { ErrorBox, Loading, StatusBadge, useLoad } from "../components/ui";
 import type { TabId } from "../router";
 import { MAINTENANCE_CATEGORIES, capitalize, date, km, money, today } from "../format";
+import { Check, Icon } from "../vendor/icons";
 
 type Props = { vehicle: Vehicle; detailed: boolean; onVehicleChanged: () => void; goTab: (tab: TabId) => void };
 
@@ -75,7 +76,7 @@ export function Maintenance({ vehicle, detailed, onVehicleChanged, goTab }: Prop
         headerExtra={<SuggestionsButton vehicle={vehicle} suggestions={mech.suggestions} onAdded={refreshAll} />}
         extraActions={(t) => (
           <button type="button" className="btn btn--sm btn--ghost" onClick={() => setCompleting(t)} title="Registrar como hecha">
-            ✓ Hecho
+            <Icon svg={Check} /> Hecho
           </button>
         )}
         renderItem={(t) => (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, type SoberanProperty, type Vehicle } from "../api";
 import { money, km, relative } from "../format";
 import { ErrorBox, Loading, useLoad } from "./ui";
+import { Check, Icon, TriangleAlert } from "../vendor/icons";
 
 type Props = { vehicle: Vehicle; onVehicleChanged: () => void };
 
@@ -73,7 +74,7 @@ export function SoberanLink({ vehicle, onVehicleChanged }: Props) {
                 {data.properties.map((p) => (
                   <option key={p.id} value={p.id}>
                     {propertyLabel(p)}
-                    {suggestion?.id === p.id ? " ★ coincide" : ""}
+                    {suggestion?.id === p.id ? " (coincide)" : ""}
                   </option>
                 ))}
               </select>
@@ -135,8 +136,8 @@ export function SoberanLink({ vehicle, onVehicleChanged }: Props) {
           )}
 
           <div className="form-status" role="status" aria-live="polite">
-            {status.kind === "error" && <p className="form-error">⚠️ {status.message}</p>}
-            {status.kind === "success" && <p className="form-success">✓ {status.message}</p>}
+            {status.kind === "error" && <p className="form-error"><Icon svg={TriangleAlert} /> {status.message}</p>}
+            {status.kind === "success" && <p className="form-success"><Icon svg={Check} /> {status.message}</p>}
           </div>
           <div className="form-actions">
             <button type="button" className="btn btn--primary" onClick={save} disabled={status.kind === "loading"}>

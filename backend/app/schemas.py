@@ -29,6 +29,7 @@ class ORM(BaseModel):
 
 class VehicleIn(BaseModel):
     name: str = Field(min_length=1, max_length=80)
+    kind: Literal["car", "motorcycle"] = "car"
     make: str = Field("", max_length=60)
     model: str = Field("", max_length=60)
     year: Optional[int] = Field(None, ge=1886, le=2100)
@@ -37,9 +38,11 @@ class VehicleIn(BaseModel):
     fuel_type: FuelType = "gasoline"
     engine: str = Field("", max_length=80)
     color: Optional[str] = Field(None, pattern=r"^#[0-9a-fA-F]{6}$")
-    cylinders: Optional[int] = Field(None, ge=2, le=6)
+    cylinders: Optional[int] = Field(None, ge=1, le=6)
     purchase_date: Optional[date] = None
     odometer_km: Km = 0
+    # Capacidad del depósito (litros; kWh útiles si es eléctrico). Vacía = la busca Garaje sola.
+    tank_capacity: Optional[float] = Field(None, gt=0, le=2000)
     notes: str = Field("", max_length=5000)
     archived: bool = False
 
@@ -59,6 +62,7 @@ class VehicleCreate(VehicleIn):
 class VehicleOut(ORM):
     id: int
     name: str
+    kind: str = "car"
     make: str
     model: str
     year: Optional[int]
@@ -71,6 +75,11 @@ class VehicleOut(ORM):
     purchase_date: Optional[date]
     odometer_km: int
     odometer_updated_at: Optional[UtcDateTime]
+    fuel_level_pct: Optional[int] = None
+    fuel_level_at: Optional[UtcDateTime] = None
+    tank_capacity: Optional[float] = None
+    tank_capacity_source: Optional[str] = None
+    tank_capacity_note: Optional[str] = None
     notes: str
     archived: bool
     has_ingest_token: bool
@@ -89,6 +98,11 @@ class VehicleOut(ORM):
 
 class OdometerIn(BaseModel):
     odometer_km: Km
+
+
+class FuelLevelIn(BaseModel):
+    """Lo que queda en el depósito (o la batería), en %."""
+    pct: int = Field(ge=0, le=100)
 
 
 class TokenOut(BaseModel):
@@ -376,8 +390,20 @@ class CostSummary(BaseModel):
     km_tracked: int
 
 
+class FuelGauge(BaseModel):
+    """Lo que queda: % que dijiste, cuánto es (si se sabe la capacidad) y para cuántos km (si hay consumo)."""
+    pct: Optional[int] = None
+    at: Optional[UtcDateTime] = None
+    capacity: Optional[float] = None
+    capacity_source: Optional[str] = None
+    unit: str = "L"
+    left: Optional[float] = None
+    range_km: Optional[int] = None
+
+
 class DashboardOut(BaseModel):
     vehicle: VehicleOut
+    fuel: Optional[FuelGauge] = None
     alerts: list[Alert]
     costs: CostSummary
     avg_consumption: Optional[float]
